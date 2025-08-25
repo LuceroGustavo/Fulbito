@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formar Equipos - Fulbito</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .page-container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+        .form-header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 1.5rem;
+        }
+        .btn-custom {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .btn-custom:hover {
+            background: linear-gradient(45deg, #5a6fd8, #6a4190);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        .info-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-futbol me-2"></i>Fulbito
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/jugadores">
+                            <i class="fas fa-users me-1"></i>Jugadores
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/equipos/formar">
+                            <i class="fas fa-random me-1"></i>Formar Equipos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/historial">
+                            <i class="fas fa-history me-1"></i>Historial
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-container">
+        <div class="container">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h1 class="text-white display-4">
+                    <i class="fas fa-random me-3"></i>Formar Equipos
+                </h1>
+                <p class="lead text-white">Configura tu partido y genera equipos balanceados automáticamente</p>
+            </div>
+
+            <!-- Información del sistema -->
+            <div class="info-card">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h4 class="mb-3">
+                            <i class="fas fa-info-circle me-2"></i>Estado del Sistema
+                        </h4>
+                        <p class="mb-0">Revisa la información actual antes de formar los equipos</p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <i class="fas fa-chart-pie fa-3x opacity-75"></i>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" th:text="${totalJugadores}">0</div>
+                        <div class="stat-label">Jugadores Totales</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" th:text="${totalJugadores >= 4 ? 'Disponible' : 'Insuficiente'}">Disponible</div>
+                        <div class="stat-label">Estado para Partido</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" th:text="${totalJugadores >= 4 ? 'Sí' : 'No'}">Sí</div>
+                        <div class="stat-label">Puede Formar Equipos</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario para formar equipos -->
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card form-card">
+                        <div class="form-header text-center">
+                            <h2 class="mb-0">
+                                <i class="fas fa-cog me-2"></i>Configuración del Partido
+                            </h2>
+                        </div>
+                        
+                        <div class="card-body p-4">
+                            <form th:action="@{/equipos/formar}" method="post" id="formarEquiposForm">
+                                <!-- Cantidad de jugadores -->
+                                <div class="mb-4">
+                                    <label for="cantidadJugadores" class="form-label fw-bold">
+                                        <i class="fas fa-users me-2"></i>¿Cuántos jugadores participarán en el partido?
+                                    </label>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <input type="number" class="form-control form-control-lg" 
+                                                   id="cantidadJugadores" name="cantidadJugadores" 
+                                                   min="4" max="22" value="10" required />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                Mínimo: 4 jugadores, Máximo: 22 jugadores
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Información sobre el algoritmo -->
+                                <div class="alert alert-info">
+                                    <h6 class="alert-heading">
+                                        <i class="fas fa-lightbulb me-2"></i>¿Cómo funciona nuestro algoritmo?
+                                    </h6>
+                                    <ul class="mb-0">
+                                        <li><strong>Balance automático:</strong> Los equipos se forman considerando las calificaciones de cada jugador</li>
+                                        <li><strong>Distribución de arqueros:</strong> Si hay arqueros, se distribuyen equitativamente</li>
+                                        <li><strong>Aleatoriedad:</strong> Cada partido tendrá equipos diferentes para mayor variedad</li>
+                                        <li><strong>Optimización:</strong> El sistema busca la menor diferencia posible entre equipos</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Validaciones -->
+                                <div th:if="${totalJugadores < 4}" class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>¡Atención!</strong> Necesitas al menos 4 jugadores registrados para formar equipos. 
+                                    Actualmente tienes <span th:text="${totalJugadores}">0</span> jugadores.
+                                </div>
+
+                                <!-- Botones -->
+                                <div class="text-center">
+                                    <a href="/jugadores" class="btn btn-outline-secondary btn-lg me-3">
+                                        <i class="fas fa-arrow-left me-2"></i>Volver a Jugadores
+                                    </a>
+                                    <button type="submit" class="btn btn-custom btn-lg" 
+                                            th:disabled="${totalJugadores < 4}">
+                                        <i class="fas fa-magic me-2"></i>¡Formar Equipos!
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consejos adicionales -->
+            <div class="row mt-5">
+                <div class="col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-balance-scale fa-3x text-primary mb-3"></i>
+                            <h5>Equipos Balanceados</h5>
+                            <p class="text-muted">Nuestro algoritmo considera todas las habilidades para crear equipos lo más parejos posible.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-random fa-3x text-success mb-3"></i>
+                            <h5>Formación Aleatoria</h5>
+                            <p class="text-muted">Cada partido tendrá equipos diferentes, asegurando que todos jueguen con diferentes compañeros.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-history fa-3x text-info mb-3"></i>
+                            <h5>Historial Completo</h5>
+                            <p class="text-muted">Todos los partidos se guardan para que puedas revisar el historial de equipos formados.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Validación del formulario
+        document.getElementById('formarEquiposForm').addEventListener('submit', function(e) {
+            const cantidad = parseInt(document.getElementById('cantidadJugadores').value);
+            const totalJugadores = parseInt('[[${totalJugadores}]]');
+            
+            if (cantidad > totalJugadores) {
+                e.preventDefault();
+                alert('No puedes formar equipos con más jugadores de los que tienes registrados. ' +
+                      'Necesitas ' + cantidad + ' jugadores pero solo tienes ' + totalJugadores + '.');
+                return false;
+            }
+            
+            if (cantidad < 4) {
+                e.preventDefault();
+                alert('Necesitas al menos 4 jugadores para formar equipos.');
+                return false;
+            }
+        });
+
+        // Actualizar información en tiempo real
+        document.getElementById('cantidadJugadores').addEventListener('input', function() {
+            const cantidad = parseInt(this.value);
+            const totalJugadores = parseInt('[[${totalJugadores}]]');
+            
+            if (cantidad > totalJugadores) {
+                this.setCustomValidity('No puedes formar equipos con más jugadores de los que tienes registrados.');
+            } else if (cantidad < 4) {
+                this.setCustomValidity('Necesitas al menos 4 jugadores para formar equipos.');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    </script>
+</body>
+</html>

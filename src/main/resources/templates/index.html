@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fulbito - Organizador de Partidos de Fútbol</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+        }
+        .feature-card {
+            transition: transform 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .stats-card {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+        .btn-custom {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-futbol me-2"></i>Fulbito
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/jugadores">
+                            <i class="fas fa-users me-1"></i>Jugadores
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/equipos/formar">
+                            <i class="fas fa-random me-1"></i>Formar Equipos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/historial">
+                            <i class="fas fa-history me-1"></i>Historial
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-4">
+                <i class="fas fa-futbol me-3"></i>Fulbito
+            </h1>
+            <p class="lead mb-4">Organiza partidos de fútbol de manera inteligente y justa</p>
+            <p class="mb-5">Crea equipos balanceados basándose en las habilidades de cada jugador</p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="/jugador/nuevo" class="btn btn-custom btn-lg">
+                    <i class="fas fa-plus me-2"></i>Agregar Jugador
+                </a>
+                <a href="/equipos/formar" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-random me-2"></i>Formar Equipos
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Estadísticas -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Estadísticas del Sistema</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card stats-card text-center h-100">
+                        <div class="card-body">
+                            <i class="fas fa-users fa-3x mb-3"></i>
+                            <h3 class="card-title" th:text="${estadisticas.totalJugadores}">0</h3>
+                            <p class="card-text">Jugadores Registrados</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stats-card text-center h-100">
+                        <div class="card-body">
+                            <i class="fas fa-shield-alt fa-3x mb-3"></i>
+                            <h3 class="card-title" th:text="${estadisticas.totalArqueros}">0</h3>
+                            <p class="card-text">Arqueros Disponibles</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stats-card text-center h-100">
+                        <div class="card-body">
+                            <i class="fas fa-trophy fa-3x mb-3"></i>
+                            <h3 class="card-title" th:text="${estadisticas.totalPartidos}">0</h3>
+                            <p class="card-text">Partidos Jugados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Características -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">¿Por qué elegir Fulbito?</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-balance-scale fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">Equipos Balanceados</h5>
+                            <p class="card-text">Nuestro algoritmo inteligente forma equipos equilibrados basándose en las habilidades de cada jugador.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-random fa-3x text-success mb-3"></i>
+                            <h5 class="card-title">Formación Aleatoria</h5>
+                            <p class="card-text">Cada partido tiene equipos diferentes, asegurando que todos jueguen con diferentes compañeros.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                            <h5 class="card-title">Sistema de Calificación</h5>
+                            <p class="card-text">Cada jugador tiene un perfil completo con calificaciones en velocidad, habilidad, fuerza, tiro y táctica.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cómo funciona -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">¿Cómo funciona?</h2>
+            <div class="row g-4">
+                <div class="col-md-3 text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-user-plus fa-2x text-primary"></i>
+                    </div>
+                    <h6>1. Agrega Jugadores</h6>
+                    <p class="small">Registra a todos los jugadores con sus habilidades</p>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-cog fa-2x text-success"></i>
+                    </div>
+                    <h6>2. Configura el Partido</h6>
+                    <p class="small">Especifica cuántos jugadores participarán</p>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-magic fa-2x text-info"></i>
+                    </div>
+                    <h6>3. Genera Equipos</h6>
+                    <p class="small">Nuestro algoritmo forma equipos balanceados</p>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-futbol fa-2x text-warning"></i>
+                    </div>
+                    <h6>4. ¡A Jugar!</h6>
+                    <p class="small">Disfruta de partidos justos y divertidos</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2025 Fulbito - Organizador de Partidos de Fútbol - creado por Gustavo Gómez Lucero</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
