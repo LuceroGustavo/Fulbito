@@ -341,6 +341,22 @@
                 <i class="fas fa-clock me-2"></i>
                 <span th:text="${#temporals.format(equipoTemporal.fechaCreacion, 'HH:mm')}">Hora</span>
             </div>
+            <div class="info-badge" th:if="${equipoTemporal.horaPartido}">
+                <i class="fas fa-clock me-2"></i>
+                <span th:text="${equipoTemporal.horaPartido}">20:00</span>
+            </div>
+                             <div class="info-badge" th:if="${equipoTemporal.lugarPartido}">
+                     <i class="fas fa-map-marker-alt me-2"></i>
+                     <span th:text="${equipoTemporal.lugarPartido}">Mega Fútbol</span>
+                 </div>
+            <div class="info-badge" th:if="${equipoTemporal.precioPartido}">
+                <i class="fas fa-dollar-sign me-2"></i>
+                <span th:text="${#numbers.formatDecimal(equipoTemporal.precioPartido, 1, 0)}">5600</span>
+            </div>
+            <div class="info-badge" th:if="${equipoTemporal.observacionesPartido and equipoTemporal.observacionesPartido != ''}">
+                <i class="fas fa-info-circle me-2"></i>
+                <span th:text="${equipoTemporal.observacionesPartido}">Observaciones</span>
+            </div>
         </div>
         
         <!-- Sección de Equipos -->
@@ -468,7 +484,7 @@
                     <i class="fas fa-plus me-2"></i>Formar Nuevos
                 </a>
                 
-                <a href="/historial" class="btn-action btn-success">
+                <a href="/partidos/historial" class="btn-action btn-success">
                     <i class="fas fa-history me-2"></i>Ver Historial
                 </a>
             </div>

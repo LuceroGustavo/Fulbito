@@ -127,11 +127,11 @@
                             <i class="fas fa-random me-1"></i>Formar Equipos
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/historial">
-                            <i class="fas fa-history me-1"></i>Historial
-                        </a>
-                    </li>
+                                         <li class="nav-item">
+                         <a class="nav-link active" href="/partidos/historial">
+                             <i class="fas fa-history me-1"></i>Historial
+                         </a>
+                     </li>
                 </ul>
             </div>
         </div>
@@ -158,7 +158,7 @@
             <!-- Lista de partidos -->
             <div class="row g-4">
                 <div th:each="partido : ${partidos}" class="col-lg-6 col-xl-4">
-                    <div class="card match-card h-100">
+                    <div class="card match-card h-100" th:attr="data-partido-id=${partido.id}">
                         <div class="match-header">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5 class="mb-0">
@@ -173,9 +173,38 @@
                                     </span>
                                 </span>
                             </div>
-                            <p class="mb-0 opacity-75" th:text="${#temporals.format(partido.fechaCreacion, 'dd/MM/yyyy HH:mm')}">
-                                15/12/2024 20:30
-                            </p>
+                            <div class="d-flex flex-column gap-1">
+                                <p class="mb-0 opacity-75">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    <span th:text="${#temporals.format(partido.fechaPartido, 'dd/MM/yyyy')}">15/12/2024</span>
+                                    <small class="ms-2 opacity-75">(Partido)</small>
+                                </p>
+                                <p class="mb-0 opacity-75" th:if="${partido.horaPartido}">
+                                    <i class="fas fa-clock me-1"></i>
+                                    <span th:text="${partido.horaPartido}">20:00</span>
+                                    <small class="ms-2 opacity-75">(Hora)</small>
+                                </p>
+                                <p class="mb-0 opacity-75" th:if="${partido.lugarPartido}">
+                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    <span th:text="${partido.lugarPartido}">Mega Fútbol</span>
+                                    <small class="ms-2 opacity-75">(Lugar)</small>
+                                </p>
+                                <p class="mb-0 opacity-75" th:if="${partido.precioPartido}">
+                                    <i class="fas fa-dollar-sign me-1"></i>
+                                    <span th:text="${#numbers.formatDecimal(partido.precioPartido, 1, 0)}">5600</span>
+                                    <small class="ms-2 opacity-75">(Precio)</small>
+                                </p>
+                                <p class="mb-0 opacity-75" th:if="${partido.observacionesPartido and partido.observacionesPartido != ''}">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    <span th:text="${partido.observacionesPartido}">Observaciones</span>
+                                    <small class="ms-2 opacity-75">(Observaciones)</small>
+                                </p>
+                                <p class="mb-0 opacity-50 small">
+                                    <i class="fas fa-clock me-1"></i>
+                                    <span th:text="${#temporals.format(partido.fechaCreacion, 'dd/MM/yyyy HH:mm')}">15/12/2024 20:30</span>
+                                    <small class="ms-2 opacity-75">(Creado)</small>
+                                </p>
+                            </div>
                         </div>
                         
                         <div class="card-body p-4">
@@ -232,6 +261,21 @@
                                    class="btn btn-custom flex-fill">
                                     <i class="fas fa-eye me-1"></i>Ver Detalles
                                 </a>
+                                
+                                <!-- Botón WhatsApp -->
+                                <button type="button" class="btn btn-success btn-sm"
+                                        th:onclick="'enviarWhatsApp(${partido.id})'"
+                                        title="Enviar por WhatsApp">
+                                    <i class="fab fa-whatsapp"></i>
+                                </button>
+                                
+                                <!-- Botón Eliminar -->
+                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                        th:onclick="'confirmarEliminacion(${partido.id})'"
+                                        title="Eliminar partido">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                
                                 <button type="button" class="btn btn-outline-secondary btn-sm"
                                         data-bs-toggle="modal" 
                                         th:data-bs-target="'#matchModal' + ${partido.id}">
@@ -343,5 +387,134 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Función para enviar por WhatsApp
+        function enviarWhatsApp(partidoId) {
+            // Obtener información del partido
+            const partidoCard = document.querySelector(`[data-partido-id="${partidoId}"]`);
+            if (!partidoCard) {
+                alert('No se pudo obtener la información del partido');
+                return;
+            }
+            
+            // Construir mensaje
+            const equipoA = Array.from(partidoCard.querySelectorAll('.team-a-preview .badge'))
+                .map(badge => badge.textContent).join(', ');
+            const equipoB = Array.from(partidoCard.querySelectorAll('.team-b-preview .badge'))
+                .map(badge => badge.textContent).join(', ');
+            
+            // Obtener fecha del partido (sin el texto "(Partido)")
+            const fechaElement = partidoCard.querySelector('.fa-calendar').parentElement;
+            const fechaPartido = fechaElement.textContent.replace('(Partido)', '').trim();
+            
+            // Obtener cantidad de jugadores
+            const cantidadJugadores = partidoCard.querySelector('.stat-item:first-child .stat-number').textContent;
+            
+            // Obtener información adicional del partido
+            let infoAdicional = '';
+            
+            // Hora del partido
+            const horaElement = partidoCard.querySelector('.fa-clock');
+            if (horaElement && horaElement.parentElement.textContent.includes('(Hora)')) {
+                const horaPartido = horaElement.parentElement.textContent.replace('(Hora)', '').trim();
+                infoAdicional += `🕐 *Hora:* ${horaPartido}\n`;
+            }
+            
+            // Lugar del partido
+            const lugarElement = partidoCard.querySelector('.fa-map-marker-alt');
+            if (lugarElement && lugarElement.parentElement.textContent.includes('(Lugar)')) {
+                const lugarPartido = lugarElement.parentElement.textContent.replace('(Lugar)', '').trim();
+                infoAdicional += `📍 *Lugar:* ${lugarPartido}\n`;
+            }
+            
+            // Precio del partido
+            const precioElement = partidoCard.querySelector('.fa-dollar-sign');
+            if (precioElement && precioElement.parentElement.textContent.includes('(Precio)')) {
+                const precioPartido = precioElement.parentElement.textContent.replace('(Precio)', '').trim();
+                infoAdicional += `💰 *Precio:* $${precioPartido} por persona\n`;
+            }
+            
+            // Observaciones del partido (si las hay)
+            const observacionesElement = partidoCard.querySelector('.fa-info-circle');
+            if (observacionesElement && observacionesElement.parentElement.textContent.includes('(Observaciones)')) {
+                const observacionesPartido = observacionesElement.parentElement.textContent.replace('(Observaciones)', '').trim();
+                if (observacionesPartido && observacionesPartido !== '') {
+                    infoAdicional += `📝 *Observaciones:* ${observacionesPartido}\n`;
+                }
+            }
+            
+            const mensaje = `⚽ *PARTIDO FULBITO* ⚽\n\n` +
+                           `📅 *Fecha:* ${fechaPartido}\n` +
+                           `👥 *Jugadores:* ${cantidadJugadores}\n` +
+                           (infoAdicional ? `\n${infoAdicional}` : '') +
+                           `\n🔴 *EQUIPO A:*\n${equipoA}\n\n` +
+                           `🔵 *EQUIPO B:*\n${equipoB}\n\n` +
+                           `¡Nos vemos en la cancha! 🏟️`;
+            
+            // Codificar mensaje para WhatsApp
+            const mensajeCodificado = encodeURIComponent(mensaje);
+            const urlWhatsApp = `https://wa.me/?text=${mensajeCodificado}`;
+            
+            // Abrir WhatsApp
+            window.open(urlWhatsApp, '_blank');
+        }
+        
+        // Función para confirmar eliminación
+        function confirmarEliminacion(partidoId) {
+            if (confirm('¿Estás seguro de que quieres eliminar este partido?\n\nEsta acción no se puede deshacer.')) {
+                eliminarPartido(partidoId);
+            }
+        }
+        
+        // Función para eliminar partido
+        async function eliminarPartido(partidoId) {
+            try {
+                const response = await fetch(`/partidos/eliminar/${partidoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    // Eliminar la tarjeta del DOM
+                    const partidoCard = document.querySelector(`[data-partido-id="${partidoId}"]`);
+                    if (partidoCard) {
+                        partidoCard.remove();
+                        // Mostrar mensaje de éxito
+                        mostrarMensaje('Partido eliminado exitosamente', 'success');
+                    }
+                } else {
+                    const error = await response.text();
+                    alert('Error al eliminar partido: ' + error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al eliminar partido. Intenta de nuevo.');
+            }
+        }
+        
+        // Función para mostrar mensajes
+        function mostrarMensaje(mensaje, tipo) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${tipo} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Insertar al inicio del contenedor
+            const container = document.querySelector('.container');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            // Auto-eliminar después de 5 segundos
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+    </script>
 </body>
 </html>

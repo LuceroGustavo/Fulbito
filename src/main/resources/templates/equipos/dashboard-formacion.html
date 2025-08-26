@@ -199,9 +199,9 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/historial">
-                            <i class="fas fa-history me-1"></i>Historial
-                        </a>
+                                             <a class="nav-link" href="/partidos/historial">
+                         <i class="fas fa-history me-1"></i>Historial
+                     </a>
                     </li>
                 </ul>
             </div>
@@ -419,18 +419,65 @@
                 </div>
             </div>
 
+            <!-- Configuración del Partido -->
+            <div class="alert alert-light mt-4" role="alert">
+                <h6><i class="fas fa-calendar me-2"></i>Configuración del Partido</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="fechaPartido" class="form-label">Fecha del Partido:</label>
+                        <input type="date" class="form-control" id="fechaPartido" name="fechaPartido" 
+                               th:value="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}">
+                        <small class="form-text text-muted">Selecciona la fecha en que se jugará el partido</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="horaPartido" class="form-label">Hora del Partido:</label>
+                        <input type="time" class="form-control" id="horaPartido" name="horaPartido" value="20:00">
+                        <small class="form-text text-muted">Hora en que comenzará el partido</small>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="lugarPartido" class="form-label">Lugar/Cancha:</label>
+                        <input type="text" class="form-control" id="lugarPartido" name="lugarPartido" 
+                                                                 placeholder="Ej: Mega Fútbol" value="Mega Fútbol">
+                        <small class="form-text text-muted">Nombre de la cancha o lugar donde se jugará</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="precioPartido" class="form-label">Precio por Persona:</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="precioPartido" name="precioPartido" 
+                                   placeholder="5600" value="5600" min="0">
+                        </div>
+                        <small class="form-text text-muted">Costo por jugador para participar</small>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="observacionesPartido" class="form-label">Observaciones:</label>
+                        <textarea class="form-control" id="observacionesPartido" name="observacionesPartido" 
+                                  rows="2" placeholder="Información adicional del partido..."></textarea>
+                        <small class="form-text text-muted">Detalles adicionales como equipamiento, reglas especiales, etc.</small>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Botones de Acción -->
             <div class="text-center mt-4">
-                <button type="button" class="btn btn-warning btn-action" id="btnRegenerar">
+                <button type="button" class="btn btn-info btn-action me-2" id="btnGuardarConfiguracion">
+                    <i class="fas fa-cog me-2"></i>Guardar Configuración
+                </button>
+                
+                <button type="button" class="btn btn-warning btn-action me-2" id="btnRegenerar">
                     <i class="fas fa-random me-2"></i>Generar Aleatoriamente
                 </button>
                 
-                <button type="button" class="btn btn-success btn-action" id="btnGuardar">
+                <button type="button" class="btn btn-success btn-action me-2" id="btnGuardar">
                     <i class="fas fa-save me-2"></i>Guardar Equipos
                 </button>
                 
                 <a th:href="@{/equipos/captura-whatsapp(sessionId=${sessionId})}" 
-                   class="captura-link">
+                   class="captura-link me-2">
                     <i class="fab fa-whatsapp me-2"></i>Vista para WhatsApp
                 </a>
                 
@@ -443,6 +490,8 @@
             <div class="alert alert-info mt-4" role="alert">
                 <h6><i class="fas fa-info-circle me-2"></i>¿Cómo usar el Dashboard?</h6>
                 <ul class="mb-0">
+                    <li><strong>Configuración del Partido:</strong> Completa la fecha, hora, lugar, precio y observaciones</li>
+                    <li><strong>Guardar Configuración:</strong> Guarda la información del partido antes de formar equipos</li>
                     <li><strong>Flechas:</strong> Haz clic en las flechas para mover jugadores entre equipos</li>
                     <li><strong>Movimiento Libre:</strong> Los equipos pueden quedar desbalanceados durante la edición</li>
                     <li><strong>Generar Aleatoriamente:</strong> Crea nuevos equipos con la misma cantidad de jugadores</li>
@@ -477,6 +526,9 @@
         
         // Inicializar botones de acción
         function inicializarBotones() {
+            // Botón guardar configuración
+            document.getElementById('btnGuardarConfiguracion').addEventListener('click', guardarConfiguracion);
+            
             // Botón regenerar equipos
             document.getElementById('btnRegenerar').addEventListener('click', regenerarEquipos);
             
@@ -643,6 +695,34 @@
             }
         }
         
+        // Guardar configuración del partido
+        async function guardarConfiguracion() {
+            try {
+                // Obtener todos los campos de configuración del partido
+                const horaPartido = document.getElementById('horaPartido').value;
+                const lugarPartido = document.getElementById('lugarPartido').value;
+                const precioPartido = document.getElementById('precioPartido').value;
+                const observacionesPartido = document.getElementById('observacionesPartido').value;
+                
+                // Validar campos obligatorios
+                if (!horaPartido || !lugarPartido || !precioPartido) {
+                    alert('❌ CONFIGURACIÓN INCOMPLETA\n\nDebes completar al menos:\n• Hora del partido\n• Lugar/Cancha\n• Precio por persona');
+                    return;
+                }
+                
+                // Mostrar confirmación
+                if (confirm('¿Guardar la configuración del partido?\n\nEsta información se usará cuando guardes los equipos.')) {
+                    // Aquí podrías hacer una llamada al backend para guardar la configuración
+                    // Por ahora, solo mostramos un mensaje de éxito
+                    alert('✅ Configuración guardada\n\nLa información del partido se ha actualizado y se usará cuando guardes los equipos.');
+                }
+                
+            } catch (error) {
+                console.error('Error al guardar configuración:', error);
+                alert('Error al guardar la configuración. Intenta de nuevo.');
+            }
+        }
+        
         // Guardar equipos
         async function guardarEquipos() {
             // VALIDAR BALANCE ANTES DE GUARDAR
@@ -657,21 +737,59 @@
                 return;
             }
             
+            // VALIDAR FECHA DEL PARTIDO
+            const fechaPartido = document.getElementById('fechaPartido').value;
+            if (!fechaPartido) {
+                alert('❌ FECHA REQUERIDA\n\nDebes seleccionar una fecha para el partido.');
+                return;
+            }
+            
+            // Validar que la fecha no sea del pasado
+            const fechaSeleccionada = new Date(fechaPartido);
+            const fechaActual = new Date();
+            fechaActual.setHours(0, 0, 0, 0); // Solo fecha, sin hora
+            
+            if (fechaSeleccionada < fechaActual) {
+                alert('❌ FECHA INVÁLIDA\n\nNo puedes seleccionar una fecha del pasado para el partido.');
+                return;
+            }
+            
+            // VALIDAR CONFIGURACIÓN DEL PARTIDO
+            const horaPartido = document.getElementById('horaPartido').value;
+            const lugarPartido = document.getElementById('lugarPartido').value;
+            const precioPartido = document.getElementById('precioPartido').value;
+            
+            if (!horaPartido || !lugarPartido || !precioPartido) {
+                alert('❌ CONFIGURACIÓN INCOMPLETA\n\nDebes completar al menos:\n• Hora del partido\n• Lugar/Cancha\n• Precio por persona\n\nUsa el botón "Guardar Configuración" primero.');
+                return;
+            }
+            
             if (confirm('¿Estás seguro de que quieres guardar estos equipos? Se guardarán en el historial permanentemente.')) {
                 try {
+                    // Obtener todos los campos de configuración del partido
+                    const horaPartido = document.getElementById('horaPartido').value;
+                    const lugarPartido = document.getElementById('lugarPartido').value;
+                    const precioPartido = document.getElementById('precioPartido').value;
+                    const observacionesPartido = document.getElementById('observacionesPartido').value;
+                    
                     const response = await fetch('/equipos/guardar-temporales', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            sessionId: sessionId
+                            sessionId: sessionId,
+                            fechaPartido: fechaPartido,
+                            horaPartido: horaPartido,
+                            lugarPartido: lugarPartido,
+                            precioPartido: precioPartido,
+                            observacionesPartido: observacionesPartido
                         })
                     });
                     
                     if (response.ok) {
                         alert('¡Equipos guardados exitosamente! Serás redirigido al historial.');
-                        window.location.href = '/historial';
+                        window.location.href = '/partidos/historial';
                     } else {
                         const error = await response.text();
                         alert('Error al guardar equipos: ' + error);

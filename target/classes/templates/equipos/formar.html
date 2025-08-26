@@ -139,9 +139,9 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/historial">
-                            <i class="fas fa-history me-1"></i>Historial
-                        </a>
+                                             <a class="nav-link" href="/partidos/historial">
+                         <i class="fas fa-history me-1"></i>Historial
+                     </a>
                     </li>
                 </ul>
             </div>
@@ -152,10 +152,10 @@
         <div class="container">
             <!-- Header -->
             <div class="text-center mb-4">
-                <h1 class="text-white display-4">
-                    <i class="fas fa-random me-3"></i>Formar Equipos
+                <h1 class="text-dark display-4 fw-bold">
+                    <i class="fas fa-random me-3 text-primary"></i>Formar Equipos
                 </h1>
-                <p class="lead text-white">Configura tu partido y genera equipos balanceados automáticamente</p>
+                <p class="lead text-secondary">Configura tu partido y genera equipos balanceados automáticamente</p>
             </div>
 
             <!-- Información del sistema -->
@@ -205,8 +205,9 @@
                                     <i class="fas fa-lightbulb me-2"></i>¿Cómo funciona nuestro algoritmo?
                                 </h6>
                                 <ul class="mb-0">
-                                    <li><strong>Balance automático:</strong> Los equipos se forman considerando las calificaciones de cada jugador</li>
-                                    <li><strong>Distribución de arqueros:</strong> Si hay arqueros, se distribuyen equitativamente</li>
+                                                    <li><strong>Balance automático:</strong> Los equipos se forman considerando las calificaciones de cada jugador</li>
+                <li><strong>Balance por edades:</strong> Los jugadores de diferentes edades se distribuyen equitativamente para evitar equipos desbalanceados</li>
+                <li><strong>Distribución de arqueros:</strong> Si hay arqueros, se distribuyen equitativamente</li>
                                     <li><strong>Aleatoriedad:</strong> Cada partido tendrá equipos diferentes para mayor variedad</li>
                                     <li><strong>Optimización:</strong> El sistema busca la menor diferencia posible entre equipos</li>
                                 </ul>
@@ -246,10 +247,8 @@
                                 <!-- Datos de jugadores para fallback (ocultos) -->
                                 <script th:inline="javascript">
                                     // Datos de jugadores desde Thymeleaf como fallback
-                                    const jugadoresThymeleaf = [[${jugadores}]];
+                                    const jugadoresThymeleaf = /*[[${jugadores}]]*/ [];
                                 </script>
-                                    </div>
-                                </div>
 
                                 <!-- Validaciones -->
                                 <div th:if="${totalJugadores < 4}" class="alert alert-warning">

@@ -1,5 +1,6 @@
 package com.Fulbito.service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -98,6 +99,12 @@ public class FormacionEquiposService {
             equipoTemporal.setPromedioEdadEquipoB(calcularPromedioEdadEquipo(equipos.get("equipoB")));
             equipoTemporal.setDiferenciaEdades(Math.abs(equipoTemporal.getPromedioEdadEquipoA() - equipoTemporal.getPromedioEdadEquipoB()));
             
+            // Configurar campos del partido con valores por defecto
+            equipoTemporal.setHoraPartido("20:00");
+            equipoTemporal.setLugarPartido("Mega Fútbol");
+            equipoTemporal.setPrecioPartido(5600.0);
+            equipoTemporal.setObservacionesPartido("");
+            
             // Guardar el equipo temporal
             return equipoTemporalRepository.save(equipoTemporal);
             
@@ -155,6 +162,12 @@ public class FormacionEquiposService {
             equipoTemporal.setPromedioEdadEquipoA(calcularPromedioEdadEquipo(equipos.get("equipoA")));
             equipoTemporal.setPromedioEdadEquipoB(calcularPromedioEdadEquipo(equipos.get("equipoB")));
             equipoTemporal.setDiferenciaEdades(Math.abs(equipoTemporal.getPromedioEdadEquipoA() - equipoTemporal.getPromedioEdadEquipoB()));
+            
+            // Configurar campos del partido con valores por defecto
+            equipoTemporal.setHoraPartido("20:00");
+            equipoTemporal.setLugarPartido("Mega Fútbol");
+            equipoTemporal.setPrecioPartido(5600.0);
+            equipoTemporal.setObservacionesPartido("");
             
             // Guardar el equipo temporal
             return equipoTemporalRepository.save(equipoTemporal);
@@ -486,7 +499,8 @@ public class FormacionEquiposService {
     /**
      * Guardar equipos temporales como partido permanente
      */
-    public Partido guardarEquiposTemporales(String sessionId) {
+    public Partido guardarEquiposTemporales(String sessionId, LocalDate fechaPartido, String horaPartido, 
+                                           String lugarPartido, Double precioPartido, String observacionesPartido) {
         EquipoTemporal equipoTemporal = obtenerEquipoTemporal(sessionId);
         if (equipoTemporal == null) {
             throw new RuntimeException("No se encontró un equipo temporal activo para esta sesión");
@@ -497,11 +511,25 @@ public class FormacionEquiposService {
             throw new RuntimeException("Los equipos no están balanceados. Ambos deben tener la misma cantidad de jugadores.");
         }
         
-        // Crear partido permanente
+        // Validar fecha del partido
+        if (fechaPartido == null) {
+            throw new RuntimeException("La fecha del partido es obligatoria.");
+        }
+        
+        if (fechaPartido.isBefore(LocalDate.now())) {
+            throw new RuntimeException("No se puede seleccionar una fecha del pasado para el partido.");
+        }
+        
+        // Crear partido permanente con todos los campos
         Partido partido = new Partido();
         partido.setCantidadJugadores(equipoTemporal.getCantidadJugadores());
         partido.setEquipoA(equipoTemporal.getEquipoA());
         partido.setEquipoB(equipoTemporal.getEquipoB());
+        partido.setFechaPartido(fechaPartido);
+        partido.setHoraPartido(horaPartido != null ? horaPartido : "20:00");
+                         partido.setLugarPartido(lugarPartido != null ? lugarPartido : "Mega Fútbol");
+        partido.setPrecioPartido(precioPartido != null ? precioPartido : 5600.0);
+        partido.setObservacionesPartido(observacionesPartido != null ? observacionesPartido : "");
         
         // Guardar partido
         Partido partidoGuardado = partidoRepository.save(partido);
@@ -511,5 +539,16 @@ public class FormacionEquiposService {
         equipoTemporalRepository.save(equipoTemporal);
         
         return partidoGuardado;
+    }
+    
+    /**
+     * Eliminar partido del historial
+     */
+    public void eliminarPartido(Long partidoId) {
+        Partido partido = partidoRepository.findById(partidoId)
+            .orElseThrow(() -> new RuntimeException("Partido no encontrado"));
+        
+        // Eliminar físicamente el partido
+        partidoRepository.delete(partido);
     }
 }

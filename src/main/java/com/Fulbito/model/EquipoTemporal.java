@@ -68,9 +68,26 @@ public class EquipoTemporal {
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;
     
+    // Campos de configuración del partido
+    @Column(name = "hora_partido")
+    private String horaPartido;
+    
+    @Column(name = "lugar_partido")
+    private String lugarPartido;
+    
+    @Column(name = "precio_partido")
+    private Double precioPartido;
+    
+    @Column(name = "observaciones_partido", columnDefinition = "TEXT")
+    private String observacionesPartido;
+    
     // Constructor por defecto
     public EquipoTemporal() {
         this.fechaCreacion = LocalDateTime.now();
+        this.horaPartido = "20:00"; // Por defecto, 8 PM
+        this.lugarPartido = "Mega Fútbol"; // Por defecto
+        this.precioPartido = 5600.0; // Por defecto
+        this.observacionesPartido = ""; // Por defecto, vacío
     }
     
     // Constructor con parámetros
@@ -259,6 +276,38 @@ public class EquipoTemporal {
         this.activo = activo;
     }
     
+    public String getHoraPartido() {
+        return horaPartido;
+    }
+    
+    public void setHoraPartido(String horaPartido) {
+        this.horaPartido = horaPartido;
+    }
+    
+    public String getLugarPartido() {
+        return lugarPartido;
+    }
+    
+    public void setLugarPartido(String lugarPartido) {
+        this.lugarPartido = lugarPartido;
+    }
+    
+    public Double getPrecioPartido() {
+        return precioPartido;
+    }
+    
+    public void setPrecioPartido(Double precioPartido) {
+        this.precioPartido = precioPartido;
+    }
+    
+    public String getObservacionesPartido() {
+        return observacionesPartido;
+    }
+    
+    public void setObservacionesPartido(String observacionesPartido) {
+        this.observacionesPartido = observacionesPartido;
+    }
+    
     @Override
     public String toString() {
         return "EquipoTemporal{" +
@@ -273,6 +322,10 @@ public class EquipoTemporal {
                 ", promedioEdadEquipoA=" + promedioEdadEquipoA +
                 ", promedioEdadEquipoB=" + promedioEdadEquipoB +
                 ", diferenciaEdades=" + diferenciaEdades +
+                ", horaPartido='" + horaPartido + '\'' +
+                ", lugarPartido='" + lugarPartido + '\'' +
+                ", precioPartido=" + precioPartido +
+                ", observacionesPartido='" + observacionesPartido + '\'' +
                 ", sessionId='" + sessionId + '\'' +
                 ", activo=" + activo +
                 '}';

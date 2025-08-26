@@ -1,5 +1,6 @@
 package com.Fulbito.controller;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -135,6 +136,14 @@ public class FulbitoController {
         model.addAttribute("totalJugadores", totalJugadores);
         model.addAttribute("jugadores", jugadores);
         return "equipos/formar";
+    }
+    
+    /**
+     * Redirección para compatibilidad con enlaces antiguos
+     */
+    @GetMapping("/historial")
+    public String redirigirHistorial() {
+        return "redirect:/partidos/historial";
     }
     
     /**
@@ -332,7 +341,37 @@ public class FulbitoController {
         
         try {
             String sessionId = (String) request.get("sessionId");
-            Partido partido = formacionEquiposService.guardarEquiposTemporales(sessionId);
+            String fechaPartidoStr = (String) request.get("fechaPartido");
+            String horaPartido = (String) request.get("horaPartido");
+            String lugarPartido = (String) request.get("lugarPartido");
+            Object precioPartidoObj = request.get("precioPartido");
+            String observacionesPartido = (String) request.get("observacionesPartido");
+            
+            // Validar que la fecha esté presente
+            if (fechaPartidoStr == null || fechaPartidoStr.trim().isEmpty()) {
+                throw new RuntimeException("La fecha del partido es obligatoria");
+            }
+            
+            // Convertir string a LocalDate
+            LocalDate fechaPartido = LocalDate.parse(fechaPartidoStr);
+            
+            // Validar que la fecha no sea del pasado
+            if (fechaPartido.isBefore(LocalDate.now())) {
+                throw new RuntimeException("No se puede seleccionar una fecha del pasado para el partido.");
+            }
+            
+            // Convertir precio a Double
+            Double precioPartido = null;
+            if (precioPartidoObj != null) {
+                if (precioPartidoObj instanceof String) {
+                    precioPartido = Double.parseDouble((String) precioPartidoObj);
+                } else if (precioPartidoObj instanceof Number) {
+                    precioPartido = ((Number) precioPartidoObj).doubleValue();
+                }
+            }
+            
+            Partido partido = formacionEquiposService.guardarEquiposTemporales(
+                sessionId, fechaPartido, horaPartido, lugarPartido, precioPartido, observacionesPartido);
             
             response.put("success", true);
             response.put("mensaje", "Equipos guardados exitosamente");
@@ -366,5 +405,27 @@ public class FulbitoController {
             // Redirigir a la página de formación si hay error
             return "redirect:/equipos/formar";
         }
+    }
+    
+    /**
+     * Eliminar partido del historial
+     */
+    @PostMapping("/partidos/eliminar/{id}")
+    @ResponseBody
+    public Map<String, Object> eliminarPartido(@PathVariable Long id) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            formacionEquiposService.eliminarPartido(id);
+            
+            response.put("success", true);
+            response.put("mensaje", "Partido eliminado exitosamente");
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("mensaje", "Error al eliminar partido: " + e.getMessage());
+        }
+        
+        return response;
     }
 }
