@@ -145,7 +145,7 @@
                                             <i class="fas fa-running me-1"></i>Velocidad
                                         </label>
                                         <input type="range" class="skill-slider" id="velocidad" th:field="*{velocidad}" 
-                                               min="1" max="10" value="5" />
+                                               min="1" max="10" />
                                         <div class="d-flex justify-content-between">
                                             <span>1 (Lento)</span>
                                             <span class="skill-value" id="velocidadValue">5</span>
@@ -160,7 +160,7 @@
                                             <i class="fas fa-magic me-1"></i>Habilidad técnica
                                         </label>
                                         <input type="range" class="skill-slider" id="habilidad" th:field="*{habilidad}" 
-                                               min="1" max="10" value="5" />
+                                               min="1" max="10" />
                                         <div class="d-flex justify-content-between">
                                             <span>1 (Básico)</span>
                                             <span class="skill-value" id="habilidadValue">5</span>
@@ -175,7 +175,7 @@
                                             <i class="fas fa-dumbbell me-1"></i>Fuerza física
                                         </label>
                                         <input type="range" class="skill-slider" id="fuerzaFisica" th:field="*{fuerzaFisica}" 
-                                               min="1" max="10" value="5" />
+                                               min="1" max="10" />
                                         <div class="d-flex justify-content-between">
                                             <span>1 (Débil)</span>
                                             <span class="skill-value" id="fuerzaFisicaValue">5</span>
@@ -190,7 +190,7 @@
                                             <i class="fas fa-bullseye me-1"></i>Tiro
                                         </label>
                                         <input type="range" class="skill-slider" id="tiro" th:field="*{tiro}" 
-                                               min="1" max="10" value="5" />
+                                               min="1" max="10" />
                                         <div class="d-flex justify-content-between">
                                             <span>1 (Impreciso)</span>
                                             <span class="skill-value" id="tiroValue">5</span>
@@ -205,7 +205,7 @@
                                             <i class="fas fa-chess me-1"></i>Táctica
                                         </label>
                                         <input type="range" class="skill-slider" id="tactica" th:field="*{tactica}" 
-                                               min="1" max="10" value="5" />
+                                               min="1" max="10" />
                                         <div class="d-flex justify-content-between">
                                             <span>1 (Sin estrategia)</span>
                                             <span class="skill-value" id="tacticaValue">5</span>
@@ -243,17 +243,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Actualizar valores de los sliders en tiempo real
-        document.querySelectorAll('.skill-slider').forEach(slider => {
-            const valueDisplay = document.getElementById(slider.id + 'Value');
-            const calificacionTotal = document.getElementById('calificacionTotal');
-            
-            slider.addEventListener('input', function() {
-                valueDisplay.textContent = this.value;
-                actualizarCalificacionTotal();
-            });
-        });
-
+        // Función para actualizar la calificación total
         function actualizarCalificacionTotal() {
             const velocidad = parseInt(document.getElementById('velocidad').value) || 0;
             const habilidad = parseInt(document.getElementById('habilidad').value) || 0;
@@ -265,8 +255,27 @@
             document.getElementById('calificacionTotal').textContent = promedio.toFixed(1);
         }
 
-        // Inicializar calificación total
-        actualizarCalificacionTotal();
+        // Función para sincronizar un slider con su display
+        function sincronizarSlider(slider) {
+            const valueDisplay = document.getElementById(slider.id + 'Value');
+            if (valueDisplay) {
+                valueDisplay.textContent = slider.value;
+            }
+            actualizarCalificacionTotal();
+        }
+
+        // Configurar event listeners para todos los sliders
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sincronizar valores iniciales
+            document.querySelectorAll('.skill-slider').forEach(slider => {
+                sincronizarSlider(slider);
+                
+                // Agregar event listener para cambios en tiempo real
+                slider.addEventListener('input', function() {
+                    sincronizarSlider(this);
+                });
+            });
+        });
     </script>
 </body>
 </html>

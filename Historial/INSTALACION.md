@@ -52,9 +52,9 @@ mvn spring-boot:run
 
 ## 🌐 Acceso a la Aplicación
 
-- **URL Principal**: http://localhost:80
-- **Página de Prueba**: http://localhost:80/test
-- **Health Check**: http://localhost:80/health
+- **URL Principal**: http://localhost:8080
+- **Página de Prueba**: http://localhost:8080/test
+- **Health Check**: http://localhost:8080/health
 
 ## 🚨 Solución de Errores Comunes
 

@@ -144,7 +144,7 @@ spring.devtools.restart.enabled=true
 spring.devtools.livereload.enabled=true
 
 # Servidor
-server.port=80
+server.port=8080
 ```
 
 ## 🚀 **Instalación y Ejecución**
@@ -158,7 +158,7 @@ server.port=80
 1. **Clonar repositorio**
 2. **Configurar base de datos** MySQL
 3. **Ejecutar**: `mvn spring-boot:run`
-4. **Acceder**: `http://localhost:80`
+4. **Acceder**: `http://localhost:8080`
 
 ### **Comandos Maven**
 ```bash
