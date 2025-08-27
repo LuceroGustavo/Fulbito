@@ -472,10 +472,7 @@
                     <i class="fas fa-save me-2"></i>Guardar Equipos y Configuración
                 </button>
                 
-                <a th:href="@{/equipos/captura-whatsapp(sessionId=${sessionId})}" 
-                   class="captura-link me-2">
-                    <i class="fab fa-whatsapp me-2"></i>Vista para WhatsApp
-                </a>
+
                 
                 <a href="/equipos/formar" class="btn btn-outline-secondary btn-action">
                     <i class="fas fa-arrow-left me-2"></i>Volver a Formar
@@ -755,7 +752,7 @@
                 return;
             }
             
-            if (confirm('¿Estás seguro de que quieres guardar estos equipos? Se guardarán en el historial permanentemente.')) {
+            if (confirm('¿Está seguro de que quiere guardar estos equipos?')) {
                 try {
                     // Obtener todos los campos de configuración del partido
                     const horaPartido = document.getElementById('horaPartido').value;
@@ -779,8 +776,7 @@
                     });
                     
                     if (response.ok) {
-                        alert('¡Equipos guardados exitosamente! Serás redirigido al historial.');
-                        window.location.href = '/partidos/historial';
+                        mostrarModalExito();
                     } else {
                         const error = await response.text();
                         alert('Error al guardar equipos: ' + error);
@@ -896,6 +892,105 @@
             `;
             
             return tarjeta;
+        }
+        
+        // Función para mostrar modal de éxito personalizado
+        function mostrarModalExito() {
+            // Crear modal dinámicamente
+            const modalHTML = `
+                <div class="modal fade" id="modalExito" tabindex="-1" aria-labelledby="modalExitoLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title" id="modalExitoLabel">
+                                    <i class="fas fa-check-circle me-2"></i>¡Equipos Guardados!
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <div class="mb-4">
+                                    <i class="fas fa-trophy fa-3x text-success mb-3"></i>
+                                    <h4 class="text-success">¡Éxito!</h4>
+                                    <p class="mb-0">Los equipos han sido guardados exitosamente en el historial.</p>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-6">
+                                        <button type="button" class="btn btn-success w-100" onclick="enviarWhatsAppEquipos()">
+                                            <i class="fab fa-whatsapp me-2"></i>Enviar por WhatsApp
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button type="button" class="btn btn-primary w-100" onclick="irAlHistorial()">
+                                            <i class="fas fa-history me-2"></i>Ver Historial
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Agregar modal al DOM
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // Mostrar modal
+            const modal = new bootstrap.Modal(document.getElementById('modalExito'));
+            modal.show();
+            
+            // Limpiar modal cuando se cierre
+            document.getElementById('modalExito').addEventListener('hidden.bs.modal', function () {
+                this.remove();
+            });
+        }
+        
+        // Función para enviar equipos por WhatsApp
+        function enviarWhatsAppEquipos() {
+            // Obtener información de los equipos actuales
+            const equipoA = Array.from(document.querySelectorAll('#dropZoneA .jugador-card h6'))
+                .map(h6 => h6.textContent).join(', ');
+            const equipoB = Array.from(document.querySelectorAll('#dropZoneB .jugador-card h6'))
+                .map(h6 => h6.textContent).join(', ');
+            
+            // Obtener información del partido
+            const fechaPartido = document.getElementById('fechaPartido').value;
+            const horaPartido = document.getElementById('horaPartido').value;
+            const lugarPartido = document.getElementById('lugarPartido').value;
+            const precioPartido = document.getElementById('precioPartido').value;
+            const observacionesPartido = document.getElementById('observacionesPartido').value;
+            
+            // Formatear fecha
+            const fecha = new Date(fechaPartido);
+            const fechaFormateada = fecha.toLocaleDateString('es-ES', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'numeric', 
+                day: 'numeric' 
+            });
+            
+            // Construir mensaje
+            let mensaje = `⚽ *PARTIDO FULBITO* ⚽\n\n`;
+            mensaje += `📅 *Fecha:* ${fechaFormateada}\n`;
+            if (horaPartido) mensaje += `🕐 *Hora:* ${horaPartido} Hs\n`;
+            if (lugarPartido) mensaje += `📍 *Lugar:* ${lugarPartido}\n`;
+            if (precioPartido) mensaje += `💰 *Precio:* $${precioPartido} por persona\n`;
+            if (observacionesPartido && observacionesPartido !== '-') {
+                mensaje += `📝 *Observaciones:* ${observacionesPartido}\n`;
+            }
+            mensaje += `\n🔴 *EQUIPO A:*\n${equipoA}\n\n`;
+            mensaje += `🔵 *EQUIPO B:*\n${equipoB}\n\n`;
+            mensaje += `¡Nos vemos en la cancha! 🏟️`;
+            
+            // Codificar y abrir WhatsApp
+            const mensajeCodificado = encodeURIComponent(mensaje);
+            const urlWhatsApp = `https://wa.me/?text=${mensajeCodificado}`;
+            window.open(urlWhatsApp, '_blank');
+        }
+        
+        // Función para ir al historial
+        function irAlHistorial() {
+            window.location.href = '/partidos/historial';
         }
     </script>
 </body>

@@ -91,12 +91,24 @@
 - [x] **Posicionamiento consistente** en todas las páginas
 
 #### **🎨 Interfaz Avanzada**
-- [ ] **Fondo de cesped** para página de creación de equipos
+- [x] **Fondo de cesped** para página de creación de equipos
 - [ ] **Mejoras para móvil** - Optimización de experiencia visual
 - [ ] **Tema oscuro/claro** configurable
 - [ ] **Personalización de colores** por usuario
 - [ ] **Animaciones y transiciones** fluidas
 - [ ] **Modo de accesibilidad** mejorado
+
+#### **🗑️ Gestión de Historial**
+- [x] **Eliminación de partidos** del historial con confirmación
+- [x] **Botón "Eliminar"** funcional en cada partido
+- [x] **Endpoint de eliminación** `/partidos/eliminar/{id}`
+- [x] **Manejo de errores** robusto en eliminación
+
+#### **📱 Comunicación por WhatsApp**
+- [x] **Botón WhatsApp** funcional en historial
+- [x] **Formato de mensaje optimizado** para compartir
+- [x] **Inclusión de datos completos** del partido
+- [x] **Integración con WhatsApp Web** nativa
 
 ---
 
@@ -247,6 +259,47 @@
 
 ---
 
+## 🆕 **FUNCIONALIDADES RECIENTES IMPLEMENTADAS (Agosto 2025)**
+
+### **🗑️ Sistema de Eliminación de Historial**
+- **Fecha de implementación**: Agosto 2025
+- **Descripción**: Permite eliminar partidos del historial de forma permanente
+- **Características técnicas**:
+  - Endpoint REST: `POST /partidos/eliminar/{id}`
+  - Método de servicio: `eliminarPartido(Long partidoId)`
+  - Eliminación directa de la base de datos
+  - Respuesta JSON con confirmación de éxito/error
+- **Interfaz de usuario**:
+  - Botón "Eliminar" en cada partido del historial
+  - Confirmación modal antes de eliminar
+  - Feedback visual inmediato del resultado
+- **Beneficios**: Mantiene el historial limpio y relevante
+
+### **📱 Integración con WhatsApp**
+- **Fecha de implementación**: Agosto 2025
+- **Descripción**: Compartir formación de equipos por WhatsApp
+- **Características técnicas**:
+  - Integración nativa con WhatsApp Web
+  - Formato de mensaje optimizado para la plataforma
+  - Inclusión de todos los datos del partido
+- **Formato del mensaje**:
+  - ⚽ Título destacado del partido
+  - 📅 Fecha y hora del partido
+  - 📍 Lugar de la cancha
+  - 💰 Precio por persona
+  - 📝 Observaciones (si las hay)
+  - 🔴 Equipo A con jugadores
+  - 🔵 Equipo B con jugadores
+- **Beneficios**: Comunicación rápida y efectiva con jugadores
+
+### **🎯 Mejoras en la Experiencia de Usuario**
+- **Modal de éxito personalizado**: Reemplaza alertas básicas
+- **Botones de acción**: "Reenviar por WhatsApp" y "Ver Historial"
+- **Confirmaciones simplificadas**: Mensajes más claros y directos
+- **Navegación mejorada**: Flujo más intuitivo entre funcionalidades
+
+---
+
 *Documento de evolución del proyecto Fulbito*
 *Última actualización: Agosto 2025*
-*Versión del documento: 1.0*
+*Versión del documento: 1.1*

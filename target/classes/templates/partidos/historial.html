@@ -257,29 +257,25 @@
 
                             <!-- Botones de acción -->
                             <div class="d-flex gap-2 mt-3">
-                                <a th:href="@{/equipos/resultado/{id}(id=${partido.id})}" 
-                                   class="btn btn-custom flex-fill">
+                                <!-- Botón Ver Detalles (abre modal) -->
+                                <button type="button" class="btn btn-custom flex-fill"
+                                        data-bs-toggle="modal" 
+                                        th:data-bs-target="'#matchModal' + ${partido.id}">
                                     <i class="fas fa-eye me-1"></i>Ver Detalles
-                                </a>
+                                </button>
                                 
                                 <!-- Botón WhatsApp -->
-                                <button type="button" class="btn btn-success btn-sm"
-                                        th:onclick="'enviarWhatsApp(${partido.id})'"
+                                <button type="button" class="btn btn-success btn-sm btn-whatsapp"
+                                        th:data-partido-id="${partido.id}"
                                         title="Enviar por WhatsApp">
                                     <i class="fab fa-whatsapp"></i>
                                 </button>
                                 
                                 <!-- Botón Eliminar -->
-                                <button type="button" class="btn btn-outline-danger btn-sm"
-                                        th:onclick="'confirmarEliminacion(${partido.id})'"
+                                <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar"
+                                        th:data-partido-id="${partido.id}"
                                         title="Eliminar partido">
                                     <i class="fas fa-trash"></i>
-                                </button>
-                                
-                                <button type="button" class="btn btn-outline-secondary btn-sm"
-                                        data-bs-toggle="modal" 
-                                        th:data-bs-target="'#matchModal' + ${partido.id}">
-                                    <i class="fas fa-info-circle"></i>
                                 </button>
                             </div>
                         </div>
@@ -331,9 +327,6 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                                    <a th:href="@{/equipos/resultado/{id}(id=${partido.id})}" class="btn btn-primary">
-                                        <i class="fas fa-external-link-alt me-1"></i>Ver Completo
-                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -515,6 +508,25 @@
                 }
             }, 5000);
         }
+        
+        // Event Listeners cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Event listeners para botones de WhatsApp
+            document.querySelectorAll('.btn-whatsapp').forEach(button => {
+                button.addEventListener('click', function() {
+                    const partidoId = this.getAttribute('data-partido-id');
+                    enviarWhatsApp(partidoId);
+                });
+            });
+            
+            // Event listeners para botones de eliminar
+            document.querySelectorAll('.btn-eliminar').forEach(button => {
+                button.addEventListener('click', function() {
+                    const partidoId = this.getAttribute('data-partido-id');
+                    confirmarEliminacion(partidoId);
+                });
+            });
+        });
     </script>
 </body>
 </html>

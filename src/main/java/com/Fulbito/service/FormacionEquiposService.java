@@ -604,6 +604,29 @@ public class FormacionEquiposService {
     }
     
     /**
+     * Eliminar partido del historial
+     */
+    public boolean eliminarPartido(Long partidoId) {
+        try {
+            System.out.println("🗑️ Iniciando eliminación del partido ID: " + partidoId);
+            
+            // Verificar que el partido existe
+            Partido partido = partidoRepository.findById(partidoId)
+                    .orElseThrow(() -> new RuntimeException("Partido no encontrado con ID: " + partidoId));
+            
+            // Eliminar partido de la base de datos
+            partidoRepository.delete(partido);
+            
+            System.out.println("✅ Partido eliminado exitosamente. ID: " + partidoId);
+            return true;
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error al eliminar partido: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
      * Guardar equipos temporales como partido permanente
      */
     public Partido guardarEquiposTemporales(String sessionId, LocalDate fechaPartido, String horaPartido, 
@@ -729,14 +752,4 @@ public class FormacionEquiposService {
         return partidoGuardado;
     }
     
-    /**
-     * Eliminar partido del historial
-     */
-    public void eliminarPartido(Long partidoId) {
-        Partido partido = partidoRepository.findById(partidoId)
-            .orElseThrow(() -> new RuntimeException("Partido no encontrado"));
-        
-        // Eliminar físicamente el partido
-        partidoRepository.delete(partido);
-    }
 }
