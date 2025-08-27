@@ -9,15 +9,108 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .page-container {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: 
+                /* Césped base */
+                linear-gradient(135deg, #2d5a27 0%, #1e3a1a 50%, #2d5a27 100%),
+                /* Textura de césped */
+                repeating-linear-gradient(
+                    90deg,
+                    transparent 0px,
+                    transparent 2px,
+                    rgba(255, 255, 255, 0.03) 2px,
+                    rgba(255, 255, 255, 0.03) 4px
+                ),
+                repeating-linear-gradient(
+                    0deg,
+                    transparent 0px,
+                    transparent 2px,
+                    rgba(255, 255, 255, 0.02) 2px,
+                    rgba(255, 255, 255, 0.02) 4px
+                ),
+                /* Líneas de campo */
+                linear-gradient(90deg, 
+                    transparent 0%, 
+                    transparent 45%, 
+                    rgba(255, 255, 255, 0.8) 45%, 
+                    rgba(255, 255, 255, 0.8) 55%, 
+                    transparent 55%, 
+                    transparent 100%
+                ),
+                linear-gradient(0deg, 
+                    transparent 0%, 
+                    transparent 45%, 
+                    rgba(255, 255, 255, 0.8) 45%, 
+                    rgba(255, 255, 255, 0.8) 55%, 
+                    transparent 55%, 
+                    transparent 100%
+                );
+            background-size: 
+                100% 100%,
+                8px 8px,
+                8px 8px,
+                100% 100%,
+                100% 100%;
             min-height: 100vh;
             padding: 2rem 0;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Círculo central de la cancha */
+        .page-container::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border: 3px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            z-index: 0;
+        }
+        
+        /* Áreas de penal */
+        .page-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                /* Área penal superior */
+                linear-gradient(90deg, 
+                    transparent 0%, 
+                    transparent 40%, 
+                    rgba(255, 255, 255, 0.3) 40%, 
+                    rgba(255, 255, 255, 0.3) 60%, 
+                    transparent 60%, 
+                    transparent 100%
+                ),
+                /* Área penal inferior */
+                linear-gradient(90deg, 
+                    transparent 0%, 
+                    transparent 40%, 
+                    rgba(255, 255, 255, 0.3) 40%, 
+                    rgba(255, 255, 255, 0.3) 60%, 
+                    transparent 60%, 
+                    transparent 100%
+                );
+            background-size: 100% 50%, 100% 50%;
+            background-position: 0 0, 0 100%;
+            background-repeat: no-repeat;
+            z-index: 0;
+            pointer-events: none;
         }
         .form-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 1;
         }
         .form-header {
             background: linear-gradient(45deg, #667eea, #764ba2);
@@ -46,6 +139,10 @@
             border-radius: 15px;
             padding: 2rem;
             margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
         .stats-grid {
             display: grid;
@@ -100,6 +197,157 @@
             border-color: #ffc107;
         }
         
+        /* Estilos para filtros avanzados */
+        .filtro-card {
+            transition: all 0.3s ease;
+        }
+        
+        .filtro-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .form-check-input:checked {
+            background-color: #198754;
+            border-color: #198754;
+        }
+        
+        .form-check-input:checked + .form-check-label {
+            color: #198754;
+            font-weight: 600;
+        }
+        
+        .btn-filtro {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-filtro:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Ocultar contenido de filtros por defecto */
+        .filtros-contenido {
+            display: none;
+            transition: all 0.3s ease;
+        }
+        
+        /* Estilo para el mensaje de filtros ocultos */
+        #mensajeFiltrosOcultos {
+            transition: all 0.3s ease;
+        }
+        
+        /* Elementos decorativos de fútbol */
+        .soccer-decoration {
+            position: absolute;
+            opacity: 0.1;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .soccer-decoration.top-left {
+            top: 20px;
+            left: 20px;
+            font-size: 4rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .soccer-decoration.top-right {
+            top: 20px;
+            right: 20px;
+            font-size: 4rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .soccer-decoration.bottom-left {
+            bottom: 20px;
+            left: 20px;
+            font-size: 4rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .soccer-decoration.bottom-right {
+            bottom: 20px;
+            right: 20px;
+            font-size: 4rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Mejorar contraste del texto sobre el fondo verde */
+        .text-dark {
+            color: #1a1a1a !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+        
+        .text-secondary {
+            color: #2c3e50 !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+        
+        /* Animaciones para elementos decorativos */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+        
+        .soccer-decoration {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .soccer-decoration.top-left {
+            animation-delay: 0s;
+        }
+        
+        .soccer-decoration.top-right {
+            animation-delay: 1.5s;
+        }
+        
+        .soccer-decoration.bottom-left {
+            animation-delay: 3s;
+        }
+        
+        .soccer-decoration.bottom-right {
+            animation-delay: 4.5s;
+        }
+        
+        /* Partículas flotantes para simular ambiente de estadio */
+        .stadium-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: particle-float 8s linear infinite;
+        }
+        
+        @keyframes particle-float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+        
         .jugador-card {
             cursor: pointer;
             transition: all 0.3s ease;
@@ -119,7 +367,7 @@
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: rgba(33, 37, 41, 0.95) !important; backdrop-filter: blur(10px); border-bottom: 2px solid rgba(255, 255, 255, 0.1);">
         <div class="container">
             <a class="navbar-brand" href="/">
                     <img src="/img/logo.png" alt="Fulbito Logo" height="45">
@@ -150,6 +398,23 @@
     </nav>
 
     <div class="page-container">
+        <!-- Contenedor de partículas flotantes -->
+        <div class="stadium-particles" id="stadiumParticles"></div>
+        
+        <!-- Elementos decorativos de fútbol -->
+        <div class="soccer-decoration top-left">
+            <i class="fas fa-futbol"></i>
+        </div>
+        <div class="soccer-decoration top-right">
+            <i class="fas fa-trophy"></i>
+        </div>
+        <div class="soccer-decoration bottom-left">
+            <i class="fas fa-bullseye"></i>
+        </div>
+        <div class="soccer-decoration bottom-right">
+            <i class="fas fa-medal"></i>
+        </div>
+        
         <div class="container">
             <!-- Header -->
             <div class="text-center mb-4">
@@ -212,6 +477,196 @@
                                         <li><strong>Aleatoriedad:</strong> Cada partido tendrá equipos diferentes para mayor variedad</li>
                                         <li><strong>Optimización:</strong> El sistema busca la menor diferencia posible entre equipos</li>
                                     </ul>
+                                </div>
+                                
+                                <!-- Panel de Filtros Avanzados -->
+                                <div class="card mt-4 filtro-card">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-filter me-2"></i>Filtros Avanzados
+                                            <small class="ms-2 opacity-75">(Opcional)</small>
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <!-- Mensaje cuando filtros están ocultos -->
+                                        <div class="text-center py-4" id="mensajeFiltrosOcultos">
+                                            <div class="mb-3">
+                                                <i class="fas fa-filter fa-3x text-success opacity-75"></i>
+                                            </div>
+                                            <h6 class="text-success mb-2">
+                                                <strong>Filtros Avanzados Disponibles</strong>
+                                            </h6>
+                                            <p class="text-muted mb-3">
+                                                Accede a opciones de filtrado por habilidad, edad, posición y rendimiento
+                                            </p>
+                                            <button type="button" class="btn btn-outline-success btn-sm" onclick="mostrarOcultarFiltros()">
+                                                <i class="fas fa-eye me-1"></i>Ver Filtros
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Información sobre filtros -->
+                                        <div class="alert alert-light border-success mb-3 filtros-contenido">
+                                            <i class="fas fa-info-circle text-success me-2"></i>
+                                            <strong>¿Cómo usar los filtros?</strong> Selecciona las opciones que desees y los jugadores se filtrarán automáticamente. 
+                                            Puedes combinar múltiples filtros para encontrar exactamente los jugadores que necesitas.
+                                        </div>
+                                        
+                                        <div class="row filtros-contenido">
+                                            <!-- Filtro por Nivel de Habilidad -->
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label fw-bold">
+                                                    <i class="fas fa-star me-1"></i>Nivel de Habilidad
+                                                </label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-habilidad" type="checkbox" value="principiante" id="filtroPrincipiante" checked>
+                                                    <label class="form-check-label" for="filtroPrincipiante">
+                                                        Principiante (1-4)
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-habilidad" type="checkbox" value="intermedio" id="filtroIntermedio" checked>
+                                                    <label class="form-check-label" for="filtroIntermedio">
+                                                        Intermedio (5-7)
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-habilidad" type="checkbox" value="avanzado" id="filtroAvanzado" checked>
+                                                    <label class="form-check-label" for="filtroAvanzado">
+                                                        Avanzado (8-10)
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Filtro por Rango de Edad -->
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label fw-bold">
+                                                    <i class="fas fa-birthday-cake me-1"></i>Rango de Edad
+                                                </label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-edad" type="checkbox" value="joven" id="filtroJoven" checked>
+                                                    <label class="form-check-label" for="filtroJoven">
+                                                        Jóvenes (18-25)
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-edad" type="checkbox" value="intermedio-edad" id="filtroIntermedioEdad" checked>
+                                                    <label class="form-check-label" for="filtroIntermedioEdad">
+                                                        Intermedios (26-35)
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-edad" type="checkbox" value="experimentado" id="filtroExperimentado" checked>
+                                                    <label class="form-check-label" for="filtroExperimentado">
+                                                        Experimentados (36+)
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row filtros-contenido">
+                                            <!-- Filtro por Posición -->
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label fw-bold">
+                                                    <i class="fas fa-futbol me-1"></i>Posición
+                                                </label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-posicion" type="checkbox" value="arquero" id="filtroArquero" checked>
+                                                    <label class="form-check-label" for="filtroArquero">
+                                                        Arqueros
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-posicion" type="checkbox" value="campo" id="filtroCampo" checked>
+                                                    <label class="form-check-label" for="filtroCampo">
+                                                        Jugadores de Campo
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Filtro por Disponibilidad -->
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label fw-bold">
+                                                    <i class="fas fa-user-check me-1"></i>Disponibilidad
+                                                </label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-disponibilidad" type="checkbox" value="activo" id="filtroActivo" checked>
+                                                    <label class="form-check-label" for="filtroActivo">
+                                                        Activos
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-disponibilidad" type="checkbox" value="inactivo" id="filtroInactivo">
+                                                    <label class="form-check-label" for="filtroInactivo">
+                                                        Inactivos
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Filtro por Rendimiento -->
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label fw-bold">
+                                                    <i class="fas fa-chart-line me-1"></i>Rendimiento
+                                                </label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-rendimiento" type="checkbox" value="alto" id="filtroRendimientoAlto" checked>
+                                                    <label class="form-check-label" for="filtroRendimientoAlto">
+                                                        Alto (8-10)
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-rendimiento" type="checkbox" value="medio" id="filtroRendimientoMedio" checked>
+                                                    <label class="form-check-label" for="filtroRendimientoMedio">
+                                                        Medio (5-7)
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-rendimiento" type="checkbox" value="bajo" id="filtroRendimientoBajo" checked>
+                                                    <label class="form-check-label" for="filtroRendimientoBajo">
+                                                        Bajo (1-4)
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Botones de Filtros -->
+                                        <div class="row filtros-contenido">
+                                            <div class="col-12 text-center">
+                                                <button type="button" class="btn btn-success me-2 btn-filtro" id="btnAplicarFiltros">
+                                                    <i class="fas fa-filter me-1"></i>Aplicar Filtros
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary btn-filtro" id="btnLimpiarFiltros">
+                                                    <i class="fas fa-broom me-1"></i>Limpiar Filtros
+                                                </button>
+                                                <button type="button" class="btn btn-outline-info btn-filtro" id="btnMostrarOcultarFiltros">
+                                                    <i class="fas fa-eye me-1"></i>Ver Filtros Avanzados
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Contador de jugadores filtrados -->
+                                        <div class="row mt-3 filtros-contenido">
+                                            <div class="col-12">
+                                                <div class="alert alert-info text-center">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    <strong id="contadorFiltrados">0</strong> jugadores disponibles con los filtros aplicados
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-filter me-1"></i>
+                                                        <span id="filtrosActivosCount">0</span> filtros activos
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Indicador de filtros activos -->
+                                        <div class="row mt-2 filtros-contenido">
+                                            <div class="col-12">
+                                                <div class="d-flex flex-wrap justify-content-center gap-2" id="indicadorFiltrosActivos">
+                                                    <!-- Los filtros activos se mostrarán aquí dinámicamente -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 
                                 <!-- Lista de Jugadores Disponibles -->
@@ -291,34 +746,34 @@
             </div>
 
             <!-- Consejos adicionales -->
-            <div class="row mt-5">
-                <div class="col-lg-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center">
+                         <div class="row mt-5">
+                 <div class="col-lg-4">
+                     <div class="card h-100 border-0 shadow-lg" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.3); position: relative; z-index: 1;">
+                         <div class="card-body text-center">
                             <i class="fas fa-balance-scale fa-3x text-primary mb-3"></i>
                             <h5>Equipos Balanceados</h5>
                             <p class="text-muted">Nuestro algoritmo considera todas las habilidades para crear equipos lo más parejos posible.</p>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center">
-                            <i class="fas fa-random fa-3x text-success mb-3"></i>
-                            <h5>Formación Aleatoria</h5>
-                            <p class="text-muted">Cada partido tendrá equipos diferentes, asegurando que todos jueguen con diferentes compañeros.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center">
-                            <i class="fas fa-history fa-3x text-info mb-3"></i>
-                            <h5>Historial Completo</h5>
-                            <p class="text-muted">Todos los partidos se guardan para que puedas revisar el historial de equipos formados.</p>
-                        </div>
-                    </div>
-                </div>
+                                 <div class="col-lg-4">
+                     <div class="card h-100 border-0 shadow-lg" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.3); position: relative; z-index: 1;">
+                         <div class="card-body text-center">
+                             <i class="fas fa-random fa-3x text-success mb-3"></i>
+                             <h5>Formación Aleatoria</h5>
+                             <p class="text-muted">Cada partido tendrá equipos diferentes, asegurando que todos jueguen con diferentes compañeros.</p>
+                         </div>
+                     </div>
+                 </div>
+                 <div class="col-lg-4">
+                     <div class="card h-100 border-0 shadow-lg" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.3); position: relative; z-index: 1;">
+                         <div class="card-body text-center">
+                             <i class="fas fa-history fa-3x text-info mb-3"></i>
+                             <h5>Historial Completo</h5>
+                             <p class="text-muted">Todos los partidos se guardan para que puedas revisar el historial de equipos formados.</p>
+                         </div>
+                     </div>
+                 </div>
             </div>
         </div>
     </div>
@@ -328,11 +783,21 @@
         // Variables globales
         let jugadoresSeleccionados = [];
         let todosLosJugadores = [];
+        let jugadoresFiltrados = [];
+        let filtrosActivos = {
+            habilidad: ['principiante', 'intermedio', 'avanzado'],
+            edad: ['joven', 'intermedio-edad', 'experimentado'],
+            posicion: ['arquero', 'campo'],
+            disponibilidad: ['activo'],
+            rendimiento: ['alto', 'medio', 'bajo']
+        };
         
         // Cargar jugadores al iniciar la página
         document.addEventListener('DOMContentLoaded', function() {
             cargarJugadores();
             inicializarEventos();
+            cargarFiltrosGuardados();
+            crearParticulasEstadio();
         });
         
         // Cargar lista de jugadores desde el servidor
@@ -360,10 +825,32 @@
             const container = document.getElementById('listaJugadores');
             container.innerHTML = '';
             
-            todosLosJugadores.forEach(jugador => {
-                const jugadorCard = crearTarjetaJugador(jugador);
-                container.appendChild(jugadorCard);
-            });
+            // Aplicar filtros antes de renderizar
+            jugadoresFiltrados = aplicarFiltros(todosLosJugadores);
+            
+            if (jugadoresFiltrados.length === 0) {
+                // Mostrar mensaje cuando no hay jugadores que coincidan con los filtros
+                container.innerHTML = `
+                    <div class="col-12 text-center">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                            <h5>No hay jugadores que coincidan con los filtros seleccionados</h5>
+                            <p class="mb-3">Intenta ajustar los filtros o usar menos restricciones.</p>
+                            <button type="button" class="btn btn-outline-warning" onclick="limpiarFiltros()">
+                                <i class="fas fa-broom me-1"></i>Limpiar Filtros
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                jugadoresFiltrados.forEach(jugador => {
+                    const jugadorCard = crearTarjetaJugador(jugador);
+                    container.appendChild(jugadorCard);
+                });
+            }
+            
+            // Actualizar contador de filtrados
+            actualizarContadorFiltrados();
         }
         
         // Crear tarjeta de jugador individual
@@ -421,6 +908,243 @@
             return col;
         }
         
+        // Función para aplicar filtros a los jugadores
+        function aplicarFiltros(jugadores) {
+            return jugadores.filter(jugador => {
+                // Filtro por nivel de habilidad
+                const nivelHabilidad = obtenerNivelHabilidad(jugador.calificacionTotal);
+                if (!filtrosActivos.habilidad.includes(nivelHabilidad)) {
+                    return false;
+                }
+                
+                // Filtro por rango de edad
+                const rangoEdad = obtenerRangoEdad(jugador.edad);
+                if (!filtrosActivos.edad.includes(rangoEdad)) {
+                    return false;
+                }
+                
+                // Filtro por posición
+                const posicion = jugador.esArquero ? 'arquero' : 'campo';
+                if (!filtrosActivos.posicion.includes(posicion)) {
+                    return false;
+                }
+                
+                // Filtro por disponibilidad (por ahora todos son activos)
+                if (!filtrosActivos.disponibilidad.includes('activo')) {
+                    return false;
+                }
+                
+                // Filtro por rendimiento
+                const nivelRendimiento = obtenerNivelRendimiento(jugador.calificacionTotal);
+                if (!filtrosActivos.rendimiento.includes(nivelRendimiento)) {
+                    return false;
+                }
+                
+                return true;
+            });
+        }
+        
+        // Función para obtener nivel de habilidad basado en calificación
+        function obtenerNivelHabilidad(calificacion) {
+            if (calificacion >= 1 && calificacion <= 4) return 'principiante';
+            if (calificacion >= 5 && calificacion <= 7) return 'intermedio';
+            if (calificacion >= 8 && calificacion <= 10) return 'avanzado';
+            return 'intermedio';
+        }
+        
+        // Función para obtener rango de edad
+        function obtenerRangoEdad(edad) {
+            if (edad >= 18 && edad <= 25) return 'joven';
+            if (edad >= 26 && edad <= 35) return 'intermedio-edad';
+            if (edad >= 36) return 'experimentado';
+            return 'intermedio-edad';
+        }
+        
+        // Función para obtener nivel de rendimiento
+        function obtenerNivelRendimiento(calificacion) {
+            if (calificacion >= 8 && calificacion <= 10) return 'alto';
+            if (calificacion >= 5 && calificacion <= 7) return 'medio';
+            if (calificacion >= 1 && calificacion <= 4) return 'bajo';
+            return 'medio';
+        }
+        
+        // Función para actualizar contador de filtrados
+        function actualizarContadorFiltrados() {
+            const contador = document.getElementById('contadorFiltrados');
+            const filtrosCount = document.getElementById('filtrosActivosCount');
+            
+            if (contador) {
+                contador.textContent = jugadoresFiltrados.length;
+            }
+            
+            if (filtrosCount) {
+                const totalFiltros = Object.values(filtrosActivos).reduce((total, filtros) => total + filtros.length, 0);
+                filtrosCount.textContent = totalFiltros;
+            }
+            
+            // Actualizar indicador visual de filtros activos
+            actualizarIndicadorFiltrosActivos();
+        }
+        
+        // Función para mostrar filtros activos visualmente
+        function actualizarIndicadorFiltrosActivos() {
+            const container = document.getElementById('indicadorFiltrosActivos');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            // Crear badges para cada filtro activo
+            Object.entries(filtrosActivos).forEach(([categoria, filtros]) => {
+                filtros.forEach(filtro => {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-success text-white';
+                    badge.innerHTML = `
+                        <i class="fas fa-filter me-1"></i>
+                        ${obtenerNombreFiltro(categoria, filtro)}
+                        <button type="button" class="btn-close btn-close-white ms-2" 
+                                onclick="desactivarFiltro('${categoria}', '${filtro}')" 
+                                style="font-size: 0.5rem;"></button>
+                    `;
+                    container.appendChild(badge);
+                });
+            });
+        }
+        
+        // Función para obtener nombre legible del filtro
+        function obtenerNombreFiltro(categoria, valor) {
+            const nombres = {
+                habilidad: {
+                    'principiante': 'Principiante',
+                    'intermedio': 'Intermedio',
+                    'avanzado': 'Avanzado'
+                },
+                edad: {
+                    'joven': 'Jóvenes',
+                    'intermedio-edad': 'Intermedios',
+                    'experimentado': 'Experimentados'
+                },
+                posicion: {
+                    'arquero': 'Arqueros',
+                    'campo': 'Campo'
+                },
+                disponibilidad: {
+                    'activo': 'Activos',
+                    'inactivo': 'Inactivos'
+                },
+                rendimiento: {
+                    'alto': 'Alto',
+                    'medio': 'Medio',
+                    'bajo': 'Bajo'
+                }
+            };
+            
+            return nombres[categoria]?.[valor] || valor;
+        }
+        
+        // Función para desactivar un filtro específico
+        function desactivarFiltro(categoria, valor) {
+            // Remover el valor del filtro
+            const index = filtrosActivos[categoria].indexOf(valor);
+            if (index > -1) {
+                filtrosActivos[categoria].splice(index, 1);
+            }
+            
+            // Actualizar la UI
+            const checkbox = document.querySelector(`[value="${valor}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+            }
+            
+            // Re-renderizar
+            renderizarListaJugadores();
+        }
+        
+        // Función para actualizar filtros activos
+        function actualizarFiltrosActivos() {
+            // Filtros de habilidad
+            filtrosActivos.habilidad = [];
+            document.querySelectorAll('.filtro-habilidad:checked').forEach(cb => {
+                filtrosActivos.habilidad.push(cb.value);
+            });
+            
+            // Filtros de edad
+            filtrosActivos.edad = [];
+            document.querySelectorAll('.filtro-edad:checked').forEach(cb => {
+                filtrosActivos.edad.push(cb.value);
+            });
+            
+            // Filtros de posición
+            filtrosActivos.posicion = [];
+            document.querySelectorAll('.filtro-posicion:checked').forEach(cb => {
+                filtrosActivos.posicion.push(cb.value);
+            });
+            
+            // Filtros de disponibilidad
+            filtrosActivos.disponibilidad = [];
+            document.querySelectorAll('.filtro-disponibilidad:checked').forEach(cb => {
+                filtrosActivos.disponibilidad.push(cb.value);
+            });
+            
+            // Filtros de rendimiento
+            filtrosActivos.rendimiento = [];
+            document.querySelectorAll('.filtro-rendimiento:checked').forEach(cb => {
+                filtrosActivos.rendimiento.push(cb.value);
+            });
+            
+            // Guardar filtros en localStorage
+            guardarFiltros();
+        }
+        
+        // Función para guardar filtros en localStorage
+        function guardarFiltros() {
+            try {
+                localStorage.setItem('fulbito_filtros', JSON.stringify(filtrosActivos));
+            } catch (error) {
+                console.log('No se pudieron guardar los filtros en localStorage');
+            }
+        }
+        
+        // Función para cargar filtros guardados
+        function cargarFiltrosGuardados() {
+            try {
+                const filtrosGuardados = localStorage.getItem('fulbito_filtros');
+                if (filtrosGuardados) {
+                    filtrosActivos = JSON.parse(filtrosGuardados);
+                    aplicarFiltrosGuardados();
+                }
+            } catch (error) {
+                console.log('No se pudieron cargar los filtros guardados');
+            }
+        }
+        
+        // Función para aplicar filtros guardados a la UI
+        function aplicarFiltrosGuardados() {
+            // Aplicar filtros de habilidad
+            document.querySelectorAll('.filtro-habilidad').forEach(cb => {
+                cb.checked = filtrosActivos.habilidad.includes(cb.value);
+            });
+            
+            // Aplicar filtros de edad
+            document.querySelectorAll('.filtro-edad').forEach(cb => {
+                cb.checked = filtrosActivos.edad.includes(cb.value);
+            });
+            
+            // Aplicar filtros de posición
+            document.querySelectorAll('.filtro-posicion').forEach(cb => {
+                cb.checked = filtrosActivos.posicion.includes(cb.value);
+            });
+            
+            // Aplicar filtros de disponibilidad
+            document.querySelectorAll('.filtro-disponibilidad').forEach(cb => {
+                cb.checked = filtrosActivos.disponibilidad.includes(cb.value);
+            });
+            
+            // Aplicar filtros de rendimiento
+            document.querySelectorAll('.filtro-rendimiento').forEach(cb => {
+                cb.checked = filtrosActivos.rendimiento.includes(cb.value);
+            });
+        }
+        
         // Inicializar eventos
         function inicializarEventos() {
             // Event listener para checkboxes de jugadores
@@ -438,6 +1162,70 @@
             
             // Botón dashboard interactivo
             document.getElementById('btnDashboardInteractivo').addEventListener('click', irADashboardInteractivo);
+            
+            // Event listeners para filtros
+            document.getElementById('btnAplicarFiltros').addEventListener('click', aplicarFiltrosYRenderizar);
+            document.getElementById('btnLimpiarFiltros').addEventListener('click', limpiarFiltros);
+            document.getElementById('btnMostrarOcultarFiltros').addEventListener('click', mostrarOcultarFiltros);
+            
+            // Event listeners para cambios en filtros
+            document.querySelectorAll('.filtro-habilidad, .filtro-edad, .filtro-posicion, .filtro-disponibilidad, .filtro-rendimiento').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    actualizarFiltrosActivos();
+                    aplicarFiltrosYRenderizar();
+                });
+            });
+        }
+        
+        // Función para aplicar filtros y renderizar
+        function aplicarFiltrosYRenderizar() {
+            actualizarFiltrosActivos();
+            renderizarListaJugadores();
+        }
+        
+        // Función para limpiar filtros
+        function limpiarFiltros() {
+            // Restaurar todos los filtros a checked
+            document.querySelectorAll('.filtro-habilidad, .filtro-edad, .filtro-posicion, .filtro-disponibilidad, .filtro-rendimiento').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            
+            // Restaurar filtros activos por defecto
+            filtrosActivos = {
+                habilidad: ['principiante', 'intermedio', 'avanzado'],
+                edad: ['joven', 'intermedio-edad', 'experimentado'],
+                posicion: ['arquero', 'campo'],
+                disponibilidad: ['activo'],
+                rendimiento: ['alto', 'medio', 'bajo']
+            };
+            
+            // Re-renderizar lista
+            renderizarListaJugadores();
+        }
+        
+        // Función para mostrar/ocultar filtros
+        function mostrarOcultarFiltros() {
+            const elementosFiltros = document.querySelectorAll('.filtros-contenido');
+            const mensajeOcultos = document.getElementById('mensajeFiltrosOcultos');
+            const btn = document.getElementById('btnMostrarOcultarFiltros');
+            
+            if (elementosFiltros[0].style.display === 'none' || elementosFiltros[0].style.display === '') {
+                // Mostrar filtros
+                elementosFiltros.forEach(elemento => {
+                    elemento.style.display = 'block';
+                });
+                mensajeOcultos.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-eye-slash me-1"></i>Ocultar Filtros';
+                btn.className = 'btn btn-outline-warning btn-filtro';
+            } else {
+                // Ocultar filtros
+                elementosFiltros.forEach(elemento => {
+                    elemento.style.display = 'none';
+                });
+                mensajeOcultos.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-eye me-1"></i>Ver Filtros Avanzados';
+                btn.className = 'btn btn-outline-info btn-filtro';
+            }
         }
         
         // Actualizar selección de jugadores
@@ -490,6 +1278,25 @@
             const timestamp = Date.now();
             const random = Math.random().toString(36).substring(2, 15);
             return `session_${timestamp}_${random}`;
+        }
+        
+        // Función para crear partículas del estadio
+        function crearParticulasEstadio() {
+            const container = document.getElementById('stadiumParticles');
+            if (!container) return;
+            
+            // Crear 20 partículas
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Posición aleatoria
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                
+                container.appendChild(particle);
+            }
         }
         
 

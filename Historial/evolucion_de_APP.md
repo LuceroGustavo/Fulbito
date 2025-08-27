@@ -83,12 +83,13 @@
 - [ ] **Confirmación de asistencia** de jugadores
 - [ ] **Gestión de suplentes** automática
 
-### **FASE 5 - Optimización Móvil (PLANIFICADA)**
-- [ ] **Mejoras para móvil** - Optimización de experiencia visual
+### **FASE 5 - Optimización Móvil y UX Avanzada (EN DESARROLLO)**
+- [ ] **Filtros avanzados** para formación de equipos
+- [ ] **Mejora en fondo visual** parecido al césped de una cancha de fútbol
+- [ ] **Gestión de grupos** de jugadores
+- [ ] **Categorías por nivel** de habilidad
 - [ ] **Tema oscuro/claro** configurable
-- [ ] **Personalización de colores** por usuario
-- [ ] **Animaciones y transiciones** fluidas
-- [ ] **Modo de accesibilidad** mejorado
+- [ ] **Responsive design avanzado** para móviles
 
 ### **FASE 6 - Aplicación Nativa (PLANIFICADA)**
 - [ ] **Compilación a APK** - Aplicación nativa para Android
@@ -177,19 +178,15 @@
 - ✅ Sistema anti-repetición
 
 ### **EN DESARROLLO (0%):**
-- 🔄 Todas las funcionalidades core están completadas
+- 🔄 FASE 5 - Optimización Móvil y UX Avanzada
 
 ### **PLANIFICADO (0%):**
-- 📋 Estadísticas avanzadas
-- 📋 Sistema de grupos
-- 📋 Programación de partidos
-- 📋 Optimización móvil
-- 📋 Compilación a APK
+- 📋 FASE 6 - Aplicación Nativa Android
 
 ---
 
 ## 🎯 **PRÓXIMO OBJETIVO:**
-**Implementar FASE 4 - Funcionalidades Avanzadas** - Dashboard de métricas y sistema de grupos.
+**Implementar FASE 5 - Optimización Móvil y UX Avanzada** - Filtros avanzados, tema oscuro/claro y responsive design móvil.
 
 ---
 
@@ -217,4 +214,4 @@
 **Usuario:** Fulbito  
 **Estado del Proyecto:** 🚀 **FUNCIONAL, ROBUSTO Y EN EXPANSIÓN**  
 **Versión Actual:** 1.1.0  
-**Progreso General:** 75% (Fases 1-3 completadas, Fases 4-6 planificadas)
+**Progreso General:** 70% (Fases 1-3 completadas, Fase 5 en desarrollo, Fase 6 planificada)
