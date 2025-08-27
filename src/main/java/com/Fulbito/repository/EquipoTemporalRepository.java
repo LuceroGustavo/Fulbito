@@ -64,4 +64,25 @@ public interface EquipoTemporalRepository extends JpaRepository<EquipoTemporal, 
     @Transactional
     @Query("UPDATE EquipoTemporal e SET e.activo = false WHERE e.fechaCreacion < :fechaLimite AND e.activo = true")
     int desactivarSesionesExpiradas(@Param("fechaLimite") java.time.LocalDateTime fechaLimite);
+    
+    /**
+     * Busca todos los equipos temporales activos
+     */
+    List<EquipoTemporal> findByActivoTrue();
+    
+    /**
+     * Limpiar referencias de un jugador en la tabla equipo_temporal_a_jugadores
+     */
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM equipo_temporal_a_jugadores WHERE jugador_id = :jugadorId", nativeQuery = true)
+    int limpiarReferenciasJugadorEnEquipoA(@Param("jugadorId") Long jugadorId);
+    
+    /**
+     * Limpiar referencias de un jugador en la tabla equipo_temporal_b_jugadores
+     */
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM equipo_temporal_b_jugadores WHERE jugador_id = :jugadorId", nativeQuery = true)
+    int limpiarReferenciasJugadorEnEquipoB(@Param("jugadorId") Long jugadorId);
 }

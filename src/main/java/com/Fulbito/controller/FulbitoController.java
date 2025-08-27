@@ -169,10 +169,52 @@ public class FulbitoController {
     @PostMapping("/jugador/eliminar/{id}")
     public String eliminarJugador(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
+            // Primero verificar si el jugador existe
+            Jugador jugador = jugadorRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Jugador no encontrado"));
+            
+            // Verificar si hay equipos temporales activos que contengan este jugador
+            int equiposTemporalesActivos = formacionEquiposService.contarEquiposTemporalesConJugador(id);
+            
+            // Verificar si hay partidos permanentes que contengan este jugador
+            int partidosPermanentes = formacionEquiposService.contarPartidosConJugador(id);
+            
+            // IMPORTANTE: SIEMPRE limpiar referencias en tablas de relación, 
+            // sin importar si hay equipos temporales activos o no
+            formacionEquiposService.limpiarReferenciasEnTablasRelacion(id);
+            
+            // Si hay partidos permanentes, eliminarlos también
+            if (partidosPermanentes > 0) {
+                int partidosEliminados = formacionEquiposService.eliminarPartidosConJugador(id);
+                System.out.println("🗑️ Se eliminaron " + partidosEliminados + " partidos del historial");
+            }
+            
+            if (equiposTemporalesActivos > 0) {
+                // Limpiar equipos temporales que contengan este jugador
+                formacionEquiposService.limpiarEquiposTemporalesConJugador(id);
+                
+                redirectAttributes.addFlashAttribute("mensaje", 
+                    "Jugador " + jugador.getNombre() + " eliminado exitosamente. " +
+                    "Se desactivaron " + equiposTemporalesActivos + " equipo(s) temporal(es) en proceso. " +
+                    "Se eliminaron " + partidosPermanentes + " partido(s) del historial.");
+                redirectAttributes.addFlashAttribute("tipo", "warning");
+            } else if (partidosPermanentes > 0) {
+                redirectAttributes.addFlashAttribute("mensaje", 
+                    "Jugador " + jugador.getNombre() + " eliminado exitosamente. " +
+                    "Se eliminaron " + partidosPermanentes + " partido(s) del historial.");
+                redirectAttributes.addFlashAttribute("tipo", "warning");
+            } else {
+                redirectAttributes.addFlashAttribute("mensaje", 
+                    "Jugador " + jugador.getNombre() + " eliminado exitosamente");
+                redirectAttributes.addFlashAttribute("tipo", "success");
+            }
+            
+            // Ahora eliminar el jugador
             jugadorRepository.deleteById(id);
-            redirectAttributes.addFlashAttribute("mensaje", "Jugador eliminado exitosamente");
-            redirectAttributes.addFlashAttribute("tipo", "success");
+            
         } catch (Exception e) {
+            System.err.println("Error al eliminar jugador ID " + id + ": " + e.getMessage());
+            e.printStackTrace();
             redirectAttributes.addFlashAttribute("mensaje", "Error al eliminar el jugador: " + e.getMessage());
             redirectAttributes.addFlashAttribute("tipo", "error");
         }

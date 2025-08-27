@@ -627,6 +627,223 @@ public class FormacionEquiposService {
     }
     
     /**
+     * Contar equipos temporales activos que contengan un jugador específico
+     * Útil para mostrar advertencias antes de eliminar un jugador
+     */
+    public int contarEquiposTemporalesConJugador(Long jugadorId) {
+        try {
+            System.out.println("=== Contando equipos temporales con jugador ID: " + jugadorId + " ===");
+            
+            // Buscar equipos temporales activos que contengan este jugador
+            List<EquipoTemporal> equiposActivos = equipoTemporalRepository.findByActivoTrue();
+            
+            int equiposConJugador = 0;
+            for (EquipoTemporal equipo : equiposActivos) {
+                boolean contieneJugador = false;
+                
+                // Verificar si el jugador está en el equipo A
+                if (equipo.getEquipoA() != null) {
+                    contieneJugador = equipo.getEquipoA().stream()
+                            .anyMatch(j -> j.getId().equals(jugadorId));
+                }
+                
+                // Verificar si el jugador está en el equipo B
+                if (!contieneJugador && equipo.getEquipoB() != null) {
+                    contieneJugador = equipo.getEquipoB().stream()
+                            .anyMatch(j -> j.getId().equals(jugadorId));
+                }
+                
+                if (contieneJugador) {
+                    equiposConJugador++;
+                    System.out.println("⚠️ Equipo temporal ID " + equipo.getId() + " contiene jugador " + jugadorId);
+                }
+            }
+            
+            System.out.println("=== Total de equipos temporales con jugador " + jugadorId + ": " + equiposConJugador + " ===");
+            return equiposConJugador;
+            
+        } catch (Exception e) {
+            System.err.println("Error al contar equipos temporales con jugador " + jugadorId + ": " + e.getMessage());
+            e.printStackTrace();
+            return 0; // Retornar 0 en caso de error
+        }
+    }
+    
+    /**
+     * Limpiar equipos temporales que contengan un jugador específico
+     * Útil para eliminar referencias antes de eliminar un jugador
+     */
+    public void limpiarEquiposTemporalesConJugador(Long jugadorId) {
+        try {
+            System.out.println("=== Limpiando equipos temporales con jugador ID: " + jugadorId + " ===");
+            
+            // Buscar equipos temporales activos que contengan este jugador
+            List<EquipoTemporal> equiposConJugador = equipoTemporalRepository.findByActivoTrue();
+            
+            int equiposLimpios = 0;
+            for (EquipoTemporal equipo : equiposConJugador) {
+                boolean contieneJugador = false;
+                
+                // Verificar si el jugador está en el equipo A
+                if (equipo.getEquipoA() != null) {
+                    contieneJugador = equipo.getEquipoA().stream()
+                            .anyMatch(j -> j.getId().equals(jugadorId));
+                }
+                
+                // Verificar si el jugador está en el equipo B
+                if (!contieneJugador && equipo.getEquipoB() != null) {
+                    contieneJugador = equipo.getEquipoB().stream()
+                            .anyMatch(j -> j.getId().equals(jugadorId));
+                }
+                
+                // Si contiene el jugador, desactivar el equipo temporal
+                if (contieneJugador) {
+                    equipo.setActivo(false);
+                    equipoTemporalRepository.save(equipo);
+                    equiposLimpios++;
+                    System.out.println("✅ Equipo temporal ID " + equipo.getId() + " desactivado (contiene jugador " + jugadorId + ")");
+                }
+            }
+            
+            // IMPORTANTE: También limpiar referencias en las tablas de relación
+            // Esto es necesario porque las referencias pueden persistir aunque el equipo esté desactivado
+            limpiarReferenciasEnTablasRelacion(jugadorId);
+            
+            System.out.println("=== Total de equipos temporales limpiados: " + equiposLimpios + " ===");
+            
+        } catch (Exception e) {
+            System.err.println("Error al limpiar equipos temporales con jugador " + jugadorId + ": " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-lanzar para que el controlador maneje el error
+        }
+    }
+    
+    /**
+     * Limpiar referencias del jugador en las tablas de relación de equipos temporales
+     * Esto es necesario para eliminar completamente las restricciones de clave foránea
+     */
+    public void limpiarReferenciasEnTablasRelacion(Long jugadorId) {
+        try {
+            System.out.println("=== Limpiando referencias en tablas de relación para jugador ID: " + jugadorId + " ===");
+            
+            // Ejecutar queries SQL directos para limpiar las referencias
+            // Esto es necesario porque JPA no maneja automáticamente estas tablas de relación
+            
+            // Limpiar referencias en equipo_temporal_a_jugadores
+            int referenciasLimpiasA = equipoTemporalRepository.limpiarReferenciasJugadorEnEquipoA(jugadorId);
+            System.out.println("✅ Referencias limpiadas en equipo A: " + referenciasLimpiasA);
+            
+            // Limpiar referencias en equipo_temporal_b_jugadores
+            int referenciasLimpiasB = equipoTemporalRepository.limpiarReferenciasJugadorEnEquipoB(jugadorId);
+            System.out.println("✅ Referencias limpiadas en equipo B: " + referenciasLimpiasB);
+            
+            System.out.println("=== Total de referencias limpiadas: " + (referenciasLimpiasA + referenciasLimpiasB) + " ===");
+            
+        } catch (Exception e) {
+            System.err.println("Error al limpiar referencias en tablas de relación: " + e.getMessage());
+            e.printStackTrace();
+            // No re-lanzar aquí, solo loggear el error
+        }
+    }
+    
+    /**
+     * Contar partidos permanentes que contengan un jugador específico
+     * Útil para mostrar advertencias antes de eliminar un jugador
+     */
+    public int contarPartidosConJugador(Long jugadorId) {
+        try {
+            System.out.println("=== Contando partidos permanentes con jugador ID: " + jugadorId + " ===");
+            
+            List<Partido> todosLosPartidos = partidoRepository.findAll();
+            int partidosConJugador = 0;
+            
+            for (Partido partido : todosLosPartidos) {
+                boolean contieneJugador = false;
+                
+                // Verificar si el jugador está en el equipo A del partido
+                if (partido.getEquipoA() != null) {
+                    contieneJugador = partido.getEquipoA().stream()
+                            .anyMatch(j -> j.getId().equals(jugadorId));
+                }
+                
+                // Verificar si el jugador está en el equipo B del partido
+                if (!contieneJugador && partido.getEquipoB() != null) {
+                    contieneJugador = partido.getEquipoB().stream()
+                            .anyMatch(j -> j.getId().equals(jugadorId));
+                }
+                
+                if (contieneJugador) {
+                    partidosConJugador++;
+                    System.out.println("⚠️ Partido ID " + partido.getId() + " contiene jugador " + jugadorId);
+                }
+            }
+            
+            System.out.println("=== Total de partidos permanentes con jugador " + jugadorId + ": " + partidosConJugador + " ===");
+            return partidosConJugador;
+            
+        } catch (Exception e) {
+            System.err.println("Error al contar partidos con jugador " + jugadorId + ": " + e.getMessage());
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    
+    /**
+     * Eliminar todos los partidos permanentes que contengan un jugador específico
+     * Esto es necesario para eliminar completamente un jugador del historial
+     */
+    public int eliminarPartidosConJugador(Long jugadorId) {
+        try {
+            System.out.println("=== Eliminando partidos permanentes con jugador ID: " + jugadorId + " ===");
+            
+            List<Partido> todosLosPartidos = partidoRepository.findAll();
+            List<Partido> partidosAEliminar = new ArrayList<>();
+            
+            // Identificar partidos que contengan el jugador
+            for (Partido partido : todosLosPartidos) {
+                boolean contieneJugador = false;
+                
+                // Verificar si el jugador está en el equipo A del partido
+                if (partido.getEquipoA() != null) {
+                    contieneJugador = partido.getEquipoA().stream()
+                            .anyMatch(j -> j.getId().equals(jugadorId));
+                }
+                
+                // Verificar si el jugador está en el equipo B del partido
+                if (!contieneJugador && partido.getEquipoB() != null) {
+                    contieneJugador = partido.getEquipoB().stream()
+                            .anyMatch(j -> j.getId().equals(jugadorId));
+                }
+                
+                if (contieneJugador) {
+                    partidosAEliminar.add(partido);
+                    System.out.println("🗑️ Partido ID " + partido.getId() + " marcado para eliminar (contiene jugador " + jugadorId + ")");
+                }
+            }
+            
+            // Eliminar los partidos identificados
+            int partidosEliminados = 0;
+            for (Partido partido : partidosAEliminar) {
+                try {
+                    partidoRepository.delete(partido);
+                    partidosEliminados++;
+                    System.out.println("✅ Partido ID " + partido.getId() + " eliminado exitosamente");
+                } catch (Exception e) {
+                    System.err.println("❌ Error al eliminar partido ID " + partido.getId() + ": " + e.getMessage());
+                }
+            }
+            
+            System.out.println("=== Total de partidos eliminados: " + partidosEliminados + " ===");
+            return partidosEliminados;
+            
+        } catch (Exception e) {
+            System.err.println("Error al eliminar partidos con jugador " + jugadorId + ": " + e.getMessage());
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    
+    /**
      * Guardar equipos temporales como partido permanente
      */
     public Partido guardarEquiposTemporales(String sessionId, LocalDate fechaPartido, String horaPartido, 

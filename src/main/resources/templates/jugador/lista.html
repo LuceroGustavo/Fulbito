@@ -234,6 +234,13 @@
                                 </div>
                                 <div class="modal-body">
                                     <p>¿Estás seguro de que quieres eliminar a <strong th:text="${jugador.nombre}">el jugador</strong>?</p>
+                                    
+                                    <!-- Advertencia sobre equipos temporales -->
+                                    <div class="alert alert-warning" role="alert">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Advertencia:</strong> Si este jugador está en equipos temporales en proceso, estos se desactivarán automáticamente.
+                                    </div>
+                                    
                                     <p class="text-muted">Esta acción no se puede deshacer.</p>
                                 </div>
                                 <div class="modal-footer">
