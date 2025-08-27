@@ -50,8 +50,18 @@ public interface EquipoTemporalRepository extends JpaRepository<EquipoTemporal, 
     List<EquipoTemporal> findByDiferenciaPromediosMenorQue(@Param("diferenciaMaxima") Double diferenciaMaxima);
     
     /**
-     * Limpia equipos temporales antiguos (más de 24 horas)
+     * Desactiva equipos temporales antiguos (más de 24 horas)
      */
-    @Query("DELETE FROM EquipoTemporal e WHERE e.fechaCreacion < :fechaLimite AND e.activo = false")
-    void limpiarEquiposAntiguos(@Param("fechaLimite") java.time.LocalDateTime fechaLimite);
+    @Modifying
+    @Transactional
+    @Query("UPDATE EquipoTemporal e SET e.activo = false WHERE e.fechaCreacion < :fechaLimite AND e.activo = true")
+    int desactivarAntiguos(@Param("fechaLimite") java.time.LocalDateTime fechaLimite);
+    
+    /**
+     * Desactiva sesiones expiradas (más de 2 horas)
+     */
+    @Modifying
+    @Transactional
+    @Query("UPDATE EquipoTemporal e SET e.activo = false WHERE e.fechaCreacion < :fechaLimite AND e.activo = true")
+    int desactivarSesionesExpiradas(@Param("fechaLimite") java.time.LocalDateTime fechaLimite);
 }

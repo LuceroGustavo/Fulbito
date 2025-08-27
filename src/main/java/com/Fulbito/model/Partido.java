@@ -120,6 +120,8 @@ public class Partido {
                     .mapToDouble(Jugador::getCalificacionTotal)
                     .average()
                     .orElse(0.0);
+        } else {
+            this.promedioEquipoA = 0.0;
         }
         
         if (equipoB != null && !equipoB.isEmpty()) {
@@ -127,9 +129,16 @@ public class Partido {
                     .mapToDouble(Jugador::getCalificacionTotal)
                     .average()
                     .orElse(0.0);
+        } else {
+            this.promedioEquipoB = 0.0;
         }
         
-        this.diferenciaPromedios = Math.abs(promedioEquipoA - promedioEquipoB);
+        // Calcular diferencia solo si ambos promedios son válidos
+        if (this.promedioEquipoA != null && this.promedioEquipoB != null) {
+            this.diferenciaPromedios = Math.abs(this.promedioEquipoA - this.promedioEquipoB);
+        } else {
+            this.diferenciaPromedios = 0.0;
+        }
     }
     
     // Getters y Setters

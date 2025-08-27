@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -121,7 +122,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="/">
-                <i class="fas fa-futbol me-2"></i>Fulbito
+                    <img src="/img/logo.png" alt="Fulbito Logo" height="45">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -140,8 +141,8 @@
                     </li>
                     <li class="nav-item">
                                              <a class="nav-link" href="/partidos/historial">
-                         <i class="fas fa-history me-1"></i>Historial
-                     </a>
+                            <i class="fas fa-history me-1"></i>Historial
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -199,19 +200,19 @@
                         </div>
                         
                         <div class="card-body p-4">
-                            <!-- Información sobre el algoritmo -->
-                            <div class="alert alert-info">
-                                <h6 class="alert-heading">
-                                    <i class="fas fa-lightbulb me-2"></i>¿Cómo funciona nuestro algoritmo?
-                                </h6>
-                                <ul class="mb-0">
-                                                    <li><strong>Balance automático:</strong> Los equipos se forman considerando las calificaciones de cada jugador</li>
+                                <!-- Información sobre el algoritmo -->
+                                <div class="alert alert-info">
+                                    <h6 class="alert-heading">
+                                        <i class="fas fa-lightbulb me-2"></i>¿Cómo funciona nuestro algoritmo?
+                                    </h6>
+                                    <ul class="mb-0">
+                                        <li><strong>Balance automático:</strong> Los equipos se forman considerando las calificaciones de cada jugador</li>
                 <li><strong>Balance por edades:</strong> Los jugadores de diferentes edades se distribuyen equitativamente para evitar equipos desbalanceados</li>
-                <li><strong>Distribución de arqueros:</strong> Si hay arqueros, se distribuyen equitativamente</li>
-                                    <li><strong>Aleatoriedad:</strong> Cada partido tendrá equipos diferentes para mayor variedad</li>
-                                    <li><strong>Optimización:</strong> El sistema busca la menor diferencia posible entre equipos</li>
-                                </ul>
-                            </div>
+                                        <li><strong>Distribución de arqueros:</strong> Si hay arqueros, se distribuyen equitativamente</li>
+                                        <li><strong>Aleatoriedad:</strong> Cada partido tendrá equipos diferentes para mayor variedad</li>
+                                        <li><strong>Optimización:</strong> El sistema busca la menor diferencia posible entre equipos</li>
+                                    </ul>
+                                </div>
                                 
                                 <!-- Lista de Jugadores Disponibles -->
                                 <div class="card mt-4">
@@ -375,15 +376,15 @@
             card.setAttribute('data-jugador-id', jugador.id);
             
             const isArquero = jugador.esArquero ? 'arquero' : '';
-            const arqueroIcon = jugador.esArquero ? '<span class="badge bg-warning text-dark me-2">🥅</span>' : '';
             
             card.innerHTML = `
                 <div class="card-body p-3">
+                    ${jugador.esArquero ? '<div class="text-center mb-2"><span class="badge bg-warning text-dark fs-6">🥅 Arquero</span></div>' : ''}
                     <div class="form-check">
                         <input class="form-check-input jugador-checkbox" type="checkbox" 
                                value="${jugador.id}" id="jugador_${jugador.id}">
                         <label class="form-check-label" for="jugador_${jugador.id}">
-                            <strong>${arqueroIcon}${jugador.nombre}</strong>
+                            <strong>${jugador.nombre}</strong>
                         </label>
                     </div>
                     <div class="mt-2">

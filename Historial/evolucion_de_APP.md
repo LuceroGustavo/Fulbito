@@ -78,19 +78,35 @@
 
 ---
 
-### **FASE 4 - Experiencia de Usuario**
+### **FASE 3 - Mejoras Visuales y UX (EN PROGRESO)**
+
+#### **🥅 Badge de Arquero**
+- [x] **Badge "🥅 Arquero"** en tarjetas de jugadores arqueros
+- [x] **Posicionamiento centrado** arriba del nombre del jugador
+- [x] **Estilo distintivo** con fondo amarillo y texto oscuro
+
+#### **🖼️ Logo en Navbar**
+- [x] **Logo integrado** en todos los navbars de la aplicación
+- [x] **Tamaño optimizado** (30px de altura) para mejor visualización
+- [x] **Posicionamiento consistente** en todas las páginas
+
+#### **🎨 Interfaz Avanzada**
+- [ ] **Fondo de cesped** para página de creación de equipos
+- [ ] **Mejoras para móvil** - Optimización de experiencia visual
+- [ ] **Tema oscuro/claro** configurable
+- [ ] **Personalización de colores** por usuario
+- [ ] **Animaciones y transiciones** fluidas
+- [ ] **Modo de accesibilidad** mejorado
+
+---
+
+### **FASE 4 - Aplicación Móvil**
 
 #### **📱 Aplicación Móvil**
 - [ ] **API REST** para consumo móvil
 - [ ] **Aplicación React Native** o Flutter
 - [ ] **Notificaciones push** para recordatorios
 - [ ] **Sincronización offline** de datos
-
-#### **🎨 Interfaz Avanzada**
-- [ ] **Tema oscuro/claro** configurable
-- [ ] **Personalización de colores** por usuario
-- [ ] **Animaciones y transiciones** fluidas
-- [ ] **Modo de accesibilidad** mejorado
 
 ---
 

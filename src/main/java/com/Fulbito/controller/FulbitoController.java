@@ -340,12 +340,28 @@ public class FulbitoController {
         Map<String, Object> response = new HashMap<>();
         
         try {
+            System.out.println("=== DEBUG: Guardando equipos temporales ===");
+            System.out.println("Request completo: " + request);
+            
             String sessionId = (String) request.get("sessionId");
             String fechaPartidoStr = (String) request.get("fechaPartido");
             String horaPartido = (String) request.get("horaPartido");
             String lugarPartido = (String) request.get("lugarPartido");
             Object precioPartidoObj = request.get("precioPartido");
             String observacionesPartido = (String) request.get("observacionesPartido");
+            
+            // Si las observaciones están vacías o solo contienen un guión, usar valor por defecto
+            if (observacionesPartido == null || observacionesPartido.trim().isEmpty() || observacionesPartido.trim().equals("-")) {
+                observacionesPartido = "Sin observaciones especiales";
+                System.out.println("⚠️ Observaciones vacías, usando valor por defecto: " + observacionesPartido);
+            }
+            
+            System.out.println("Session ID: " + sessionId);
+            System.out.println("Fecha Partido: " + fechaPartidoStr);
+            System.out.println("Hora Partido: " + horaPartido);
+            System.out.println("Lugar Partido: " + lugarPartido);
+            System.out.println("Precio Partido (raw): " + precioPartidoObj + " (tipo: " + (precioPartidoObj != null ? precioPartidoObj.getClass().getSimpleName() : "null") + ")");
+            System.out.println("Observaciones: " + observacionesPartido);
             
             // Validar que la fecha esté presente
             if (fechaPartidoStr == null || fechaPartidoStr.trim().isEmpty()) {
@@ -355,23 +371,49 @@ public class FulbitoController {
             // Convertir string a LocalDate
             LocalDate fechaPartido = LocalDate.parse(fechaPartidoStr);
             
-            // Validar que la fecha no sea del pasado
-            if (fechaPartido.isBefore(LocalDate.now())) {
-                throw new RuntimeException("No se puede seleccionar una fecha del pasado para el partido.");
+            // Validar que la fecha no sea del pasado (permitir hoy y futuras)
+            LocalDate hoy = LocalDate.now();
+            System.out.println("=== DEBUG FECHA ===");
+            System.out.println("Fecha seleccionada: " + fechaPartido);
+            System.out.println("Fecha actual: " + hoy);
+            System.out.println("Es antes de hoy: " + fechaPartido.isBefore(hoy));
+            
+            if (fechaPartido.isBefore(hoy)) {
+                throw new RuntimeException("No se puede seleccionar una fecha del pasado para el partido. Puedes crear partidos para hoy o fechas futuras.");
             }
             
-            // Convertir precio a Double
+            // Convertir precio a Double con mejor manejo de errores
             Double precioPartido = null;
-            if (precioPartidoObj != null) {
-                if (precioPartidoObj instanceof String) {
-                    precioPartido = Double.parseDouble((String) precioPartidoObj);
-                } else if (precioPartidoObj instanceof Number) {
-                    precioPartido = ((Number) precioPartidoObj).doubleValue();
+            try {
+                if (precioPartidoObj != null) {
+                    if (precioPartidoObj instanceof String) {
+                        String precioStr = ((String) precioPartidoObj).trim();
+                        if (!precioStr.isEmpty()) {
+                            precioPartido = Double.parseDouble(precioStr);
+                        }
+                    } else if (precioPartidoObj instanceof Number) {
+                        precioPartido = ((Number) precioPartidoObj).doubleValue();
+                    }
                 }
+                
+                // Si no se pudo convertir, usar valor por defecto
+                if (precioPartido == null) {
+                    precioPartido = 5600.0; // Valor por defecto
+                    System.out.println("⚠️ Precio no válido, usando valor por defecto: " + precioPartido);
+                }
+            } catch (NumberFormatException e) {
+                precioPartido = 5600.0; // Valor por defecto en caso de error
+                System.out.println("⚠️ Error al convertir precio, usando valor por defecto: " + precioPartido);
             }
+            
+            System.out.println("=== Llamando al servicio ===");
+            System.out.println("Precio final: " + precioPartido);
             
             Partido partido = formacionEquiposService.guardarEquiposTemporales(
                 sessionId, fechaPartido, horaPartido, lugarPartido, precioPartido, observacionesPartido);
+            
+            System.out.println("=== Partido guardado exitosamente ===");
+            System.out.println("ID del partido: " + partido.getId());
             
             response.put("success", true);
             response.put("mensaje", "Equipos guardados exitosamente");

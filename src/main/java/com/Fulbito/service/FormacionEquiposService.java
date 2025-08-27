@@ -1,11 +1,13 @@
 package com.Fulbito.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,19 +64,19 @@ public class FormacionEquiposService {
             System.out.println("Cantidad jugadores: " + cantidadJugadores);
             System.out.println("Session ID: " + sessionId);
             
-            // Validar que haya suficientes jugadores
-            long totalJugadores = jugadorRepository.count();
-            if (totalJugadores < cantidadJugadores) {
-                throw new RuntimeException("No hay suficientes jugadores registrados. Se necesitan " + 
-                                        cantidadJugadores + " pero solo hay " + totalJugadores);
-            }
+        // Validar que haya suficientes jugadores
+        long totalJugadores = jugadorRepository.count();
+        if (totalJugadores < cantidadJugadores) {
+            throw new RuntimeException("No hay suficientes jugadores registrados. Se necesitan " + 
+                                    cantidadJugadores + " pero solo hay " + totalJugadores);
+        }
             
             // Desactivar equipos temporales anteriores de esta sesión
             equipoTemporalRepository.desactivarPorSessionId(sessionId);
-            
-            // Obtener todos los jugadores ordenados por calificación
-            List<Jugador> todosJugadores = jugadorRepository.findAllByOrderByCalificacionTotalDesc();
-            
+        
+        // Obtener todos los jugadores ordenados por calificación
+        List<Jugador> todosJugadores = jugadorRepository.findAllByOrderByCalificacionTotalDesc();
+        
             // Seleccionar jugadores aleatoriamente
             List<Jugador> jugadoresSeleccionados = seleccionarJugadoresAleatorios(todosJugadores, cantidadJugadores);
             
@@ -229,9 +231,9 @@ public class FormacionEquiposService {
             if (i % 2 == 0) {
                 // Jugadores pares van al equipo A (mayores primero)
                 if (equipoA.size() < jugadoresPorEquipo) {
-                    equipoA.add(jugadoresCampo.get(i));
-                } else {
-                    equipoB.add(jugadoresCampo.get(i));
+                equipoA.add(jugadoresCampo.get(i));
+            } else {
+                equipoB.add(jugadoresCampo.get(i));
                 }
             } else {
                 // Jugadores impares van al equipo B (jóvenes primero)
@@ -321,8 +323,8 @@ public class FormacionEquiposService {
                         
                         // Solo si no empeora mucho la calificación (máximo 0.3 puntos)
                         if (nuevaDiferencia <= diferenciaActual + 0.3) {
-                            equipoA.set(i, jugadorB);
-                            equipoB.set(j, jugadorA);
+                        equipoA.set(i, jugadorB);
+                        equipoB.set(j, jugadorA);
                             return; // Solo un intercambio por iteración
                         }
                     }
@@ -493,14 +495,119 @@ public class FormacionEquiposService {
         int cantidadEquipoA = equipoTemporal.getEquipoA().size();
         int cantidadEquipoB = equipoTemporal.getEquipoB().size();
         
-        return cantidadEquipoA == cantidadEquipoB;
+        if (cantidadEquipoA != cantidadEquipoB) {
+            return false;
+        }
+        
+        // Verificar que no se repitan equipos de partidos anteriores
+        if (verificarRepeticionEquipos(equipoTemporal)) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Verificar si los equipos se repiten de partidos anteriores
+     */
+    private boolean verificarRepeticionEquipos(EquipoTemporal equipoTemporal) {
+        // Obtener los últimos 3 partidos para verificar
+        List<Partido> partidosRecientes = partidoRepository.findAllByOrderByFechaCreacionDesc();
+        
+        if (partidosRecientes.size() < 2) {
+            return false; // No hay suficientes partidos para comparar
+        }
+        
+        // Tomar solo los últimos 2 partidos para verificar
+        List<Partido> partidosAVerificar = partidosRecientes.subList(0, Math.min(2, partidosRecientes.size()));
+        
+        for (Partido partidoAnterior : partidosAVerificar) {
+            if (equiposSonIguales(equipoTemporal, partidoAnterior)) {
+                return true; // Se encontró una repetición
+            }
+        }
+        
+        return false; // No hay repeticiones
+    }
+    
+    /**
+     * Comparar si dos conjuntos de equipos son iguales
+     */
+    private boolean equiposSonIguales(EquipoTemporal equipoTemporal, Partido partidoAnterior) {
+        // Verificar si el equipo A se repite
+        if (equiposSonIguales(equipoTemporal.getEquipoA(), partidoAnterior.getEquipoA()) &&
+            equiposSonIguales(equipoTemporal.getEquipoB(), partidoAnterior.getEquipoB())) {
+            return true;
+        }
+        
+        // Verificar si el equipo A se repite pero invertido
+        if (equiposSonIguales(equipoTemporal.getEquipoA(), partidoAnterior.getEquipoB()) &&
+            equiposSonIguales(equipoTemporal.getEquipoB(), partidoAnterior.getEquipoA())) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Comparar si dos listas de jugadores son iguales
+     */
+    private boolean equiposSonIguales(List<Jugador> equipo1, List<Jugador> equipo2) {
+        if (equipo1 == null || equipo2 == null) return false;
+        if (equipo1.size() != equipo2.size()) return false;
+        
+        // Crear sets de IDs para comparar
+        Set<Long> idsEquipo1 = equipo1.stream().map(Jugador::getId).collect(Collectors.toSet());
+        Set<Long> idsEquipo2 = equipo2.stream().map(Jugador::getId).collect(Collectors.toSet());
+        
+        return idsEquipo1.equals(idsEquipo2);
+    }
+    
+    /**
+     * Limpiar equipos temporales antiguos (más de 24 horas)
+     */
+    public void limpiarEquiposTemporalesAntiguos() {
+        try {
+            System.out.println("🧹 Iniciando limpieza de equipos temporales antiguos...");
+            
+            // Obtener equipos temporales inactivos de más de 24 horas
+            LocalDateTime limiteTiempo = LocalDateTime.now().minusHours(24);
+            
+            // Desactivar equipos temporales antiguos
+            int equiposDesactivados = equipoTemporalRepository.desactivarAntiguos(limiteTiempo);
+            
+            System.out.println("✅ Limpieza completada. Equipos desactivados: " + equiposDesactivados);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error durante la limpieza de equipos temporales: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Limpiar equipos temporales de sesiones expiradas
+     */
+    public void limpiarSesionesExpiradas() {
+        try {
+            System.out.println("🧹 Iniciando limpieza de sesiones expiradas...");
+            
+            // Obtener equipos temporales activos de más de 2 horas
+            LocalDateTime limiteSesion = LocalDateTime.now().minusHours(2);
+            
+            // Desactivar sesiones expiradas
+            int sesionesDesactivadas = equipoTemporalRepository.desactivarSesionesExpiradas(limiteSesion);
+            
+            System.out.println("✅ Limpieza de sesiones completada. Sesiones desactivadas: " + sesionesDesactivadas);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error durante la limpieza de sesiones: " + e.getMessage());
+        }
     }
     
     /**
      * Guardar equipos temporales como partido permanente
      */
     public Partido guardarEquiposTemporales(String sessionId, LocalDate fechaPartido, String horaPartido, 
-                                           String lugarPartido, Double precioPartido, String observacionesPartido) {
+                                           String lugarPartido, Object precioPartidoObj, String observacionesPartido) {
         EquipoTemporal equipoTemporal = obtenerEquipoTemporal(sessionId);
         if (equipoTemporal == null) {
             throw new RuntimeException("No se encontró un equipo temporal activo para esta sesión");
@@ -520,24 +627,105 @@ public class FormacionEquiposService {
             throw new RuntimeException("No se puede seleccionar una fecha del pasado para el partido.");
         }
         
+        // Convertir precio a Double con mejor manejo de errores
+        Double precioPartido = null;
+        try {
+            if (precioPartidoObj != null) {
+                if (precioPartidoObj instanceof String) {
+                    String precioStr = ((String) precioPartidoObj).trim();
+                    if (!precioStr.isEmpty()) {
+                        precioPartido = Double.parseDouble(precioStr);
+                    }
+                } else if (precioPartidoObj instanceof Number) {
+                    precioPartido = ((Number) precioPartidoObj).doubleValue();
+                }
+            }
+            
+            // Si no se pudo convertir, usar valor por defecto
+            if (precioPartido == null) {
+                precioPartido = 5600.0; // Valor por defecto
+            }
+        } catch (NumberFormatException e) {
+            precioPartido = 5600.0; // Valor por defecto en caso de error
+        }
+        
+        System.out.println("=== DEBUG: Creando partido permanente ===");
+        System.out.println("Cantidad jugadores: " + equipoTemporal.getCantidadJugadores());
+        System.out.println("Equipo A size: " + (equipoTemporal.getEquipoA() != null ? equipoTemporal.getEquipoA().size() : "null"));
+        System.out.println("Equipo B size: " + (equipoTemporal.getEquipoB() != null ? equipoTemporal.getEquipoB().size() : "null"));
+        System.out.println("Fecha partido: " + fechaPartido);
+        System.out.println("Hora partido: " + horaPartido);
+        System.out.println("Lugar partido: " + lugarPartido);
+        System.out.println("Precio partido: " + precioPartido);
+        System.out.println("Observaciones: " + observacionesPartido);
+        
         // Crear partido permanente con todos los campos
         Partido partido = new Partido();
         partido.setCantidadJugadores(equipoTemporal.getCantidadJugadores());
-        partido.setEquipoA(equipoTemporal.getEquipoA());
-        partido.setEquipoB(equipoTemporal.getEquipoB());
+        
+        // Crear nuevas listas de jugadores para evitar referencias compartidas
+        List<Jugador> equipoANuevo = new ArrayList<>();
+        List<Jugador> equipoBNuevo = new ArrayList<>();
+        
+        // Copiar jugadores del equipo A
+        if (equipoTemporal.getEquipoA() != null) {
+            for (Jugador jugador : equipoTemporal.getEquipoA()) {
+                Jugador nuevoJugador = new Jugador();
+                nuevoJugador.setId(jugador.getId());
+                nuevoJugador.setNombre(jugador.getNombre());
+                nuevoJugador.setEdad(jugador.getEdad());
+                nuevoJugador.setNivelEdad(jugador.getNivelEdad());
+                nuevoJugador.setVelocidad(jugador.getVelocidad());
+                nuevoJugador.setHabilidad(jugador.getHabilidad());
+                nuevoJugador.setFuerzaFisica(jugador.getFuerzaFisica());
+                nuevoJugador.setTiro(jugador.getTiro());
+                nuevoJugador.setTactica(jugador.getTactica());
+                nuevoJugador.setEsArquero(jugador.getEsArquero());
+                equipoANuevo.add(nuevoJugador);
+            }
+        }
+        
+        // Copiar jugadores del equipo B
+        if (equipoTemporal.getEquipoB() != null) {
+            for (Jugador jugador : equipoTemporal.getEquipoB()) {
+                Jugador nuevoJugador = new Jugador();
+                nuevoJugador.setId(jugador.getId());
+                nuevoJugador.setNombre(jugador.getNombre());
+                nuevoJugador.setEdad(jugador.getEdad());
+                nuevoJugador.setNivelEdad(jugador.getNivelEdad());
+                nuevoJugador.setVelocidad(jugador.getVelocidad());
+                nuevoJugador.setHabilidad(jugador.getHabilidad());
+                nuevoJugador.setFuerzaFisica(jugador.getFuerzaFisica());
+                nuevoJugador.setTiro(jugador.getTiro());
+                nuevoJugador.setTactica(jugador.getTactica());
+                nuevoJugador.setEsArquero(jugador.getEsArquero());
+                equipoBNuevo.add(nuevoJugador);
+            }
+        }
+        
+        partido.setEquipoA(equipoANuevo);
+        partido.setEquipoB(equipoBNuevo);
         partido.setFechaPartido(fechaPartido);
         partido.setHoraPartido(horaPartido != null ? horaPartido : "20:00");
-                         partido.setLugarPartido(lugarPartido != null ? lugarPartido : "Mega Fútbol");
-        partido.setPrecioPartido(precioPartido != null ? precioPartido : 5600.0);
+        partido.setLugarPartido(lugarPartido != null ? lugarPartido : "Mega Fútbol");
+        partido.setPrecioPartido(precioPartido);
         partido.setObservacionesPartido(observacionesPartido != null ? observacionesPartido : "");
+        
+        System.out.println("=== DEBUG: Guardando partido en base de datos ===");
         
         // Guardar partido
         Partido partidoGuardado = partidoRepository.save(partido);
+        System.out.println("✅ Partido guardado con ID: " + partidoGuardado.getId());
         
         // Desactivar equipo temporal
         equipoTemporal.setActivo(false);
         equipoTemporalRepository.save(equipoTemporal);
+        System.out.println("✅ Equipo temporal desactivado");
         
+        // Limpiar equipos temporales antiguos después de guardar
+        limpiarEquiposTemporalesAntiguos();
+        
+        System.out.println("=== DEBUG: Proceso completado exitosamente ===");
         return partidoGuardado;
     }
     

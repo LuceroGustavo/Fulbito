@@ -110,7 +110,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="/">
-                <i class="fas fa-futbol me-2"></i>Fulbito
+                    <img src="/img/logo.png" alt="Fulbito Logo" height="45">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -127,11 +127,11 @@
                             <i class="fas fa-random me-1"></i>Formar Equipos
                         </a>
                     </li>
-                                         <li class="nav-item">
+                    <li class="nav-item">
                          <a class="nav-link active" href="/partidos/historial">
-                             <i class="fas fa-history me-1"></i>Historial
-                         </a>
-                     </li>
+                            <i class="fas fa-history me-1"></i>Historial
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -194,7 +194,7 @@
                                     <span th:text="${#numbers.formatDecimal(partido.precioPartido, 1, 0)}">5600</span>
                                     <small class="ms-2 opacity-75">(Precio)</small>
                                 </p>
-                                <p class="mb-0 opacity-75" th:if="${partido.observacionesPartido and partido.observacionesPartido != ''}">
+                                <p class="mb-0 opacity-75" th:if="${partido.observacionesPartido != null and !#strings.isEmpty(partido.observacionesPartido)}">
                                     <i class="fas fa-info-circle me-1"></i>
                                     <span th:text="${partido.observacionesPartido}">Observaciones</span>
                                     <small class="ms-2 opacity-75">(Observaciones)</small>

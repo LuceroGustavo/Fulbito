@@ -178,10 +178,10 @@
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-futbol me-2"></i>Fulbito
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                            <a class="navbar-brand" href="/">
+                    <img src="/img/logo.png" alt="Fulbito Logo" height="45">
             </a>
             <button class="navbar-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -456,24 +456,20 @@
                     <div class="col-12 mb-3">
                         <label for="observacionesPartido" class="form-label">Observaciones:</label>
                         <textarea class="form-control" id="observacionesPartido" name="observacionesPartido" 
-                                  rows="2" placeholder="Información adicional del partido..."></textarea>
-                        <small class="form-text text-muted">Detalles adicionales como equipamiento, reglas especiales, etc.</small>
+                                  rows="2" placeholder="Información adicional del partido...">-</textarea>
+                        <small class="form-text text-muted">Detalles adicionales como equipamiento, reglas especiales, etc. (Opcional - se puede dejar con "-")</small>
                     </div>
                 </div>
             </div>
             
             <!-- Botones de Acción -->
             <div class="text-center mt-4">
-                <button type="button" class="btn btn-info btn-action me-2" id="btnGuardarConfiguracion">
-                    <i class="fas fa-cog me-2"></i>Guardar Configuración
-                </button>
-                
                 <button type="button" class="btn btn-warning btn-action me-2" id="btnRegenerar">
                     <i class="fas fa-random me-2"></i>Generar Aleatoriamente
                 </button>
                 
                 <button type="button" class="btn btn-success btn-action me-2" id="btnGuardar">
-                    <i class="fas fa-save me-2"></i>Guardar Equipos
+                    <i class="fas fa-save me-2"></i>Guardar Equipos y Configuración
                 </button>
                 
                 <a th:href="@{/equipos/captura-whatsapp(sessionId=${sessionId})}" 
@@ -490,8 +486,8 @@
             <div class="alert alert-info mt-4" role="alert">
                 <h6><i class="fas fa-info-circle me-2"></i>¿Cómo usar el Dashboard?</h6>
                 <ul class="mb-0">
-                    <li><strong>Configuración del Partido:</strong> Completa la fecha, hora, lugar, precio y observaciones</li>
-                    <li><strong>Guardar Configuración:</strong> Guarda la información del partido antes de formar equipos</li>
+                                    <li><strong>Configuración del Partido:</strong> Completa la fecha, hora, lugar, precio y observaciones</li>
+                <li><strong>Guardar Equipos:</strong> Guarda automáticamente la configuración y los equipos en un solo paso</li>
                     <li><strong>Flechas:</strong> Haz clic en las flechas para mover jugadores entre equipos</li>
                     <li><strong>Movimiento Libre:</strong> Los equipos pueden quedar desbalanceados durante la edición</li>
                     <li><strong>Generar Aleatoriamente:</strong> Crea nuevos equipos con la misma cantidad de jugadores</li>
@@ -509,6 +505,7 @@
                     <li><strong>Distribución de arqueros:</strong> Si hay arqueros, se distribuyen equitativamente entre equipos.</li>
                     <li><strong>Aleatoriedad:</strong> Cada regeneración crea equipos diferentes para mayor variedad.</li>
                     <li><strong>Optimización inteligente:</strong> El sistema busca el mejor balance entre calificación, edad y distribución de arqueros.</li>
+        <li><strong>Verificación de variedad:</strong> Se verifica que no se repitan equipos de partidos anteriores para mayor diversidad.</li>
                 </ul>
             </div>
         </div>
@@ -521,19 +518,33 @@
         
         // Inicializar eventos cuando se carga la página
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM cargado, inicializando botones...');
             inicializarBotones();
         });
         
         // Inicializar botones de acción
         function inicializarBotones() {
-            // Botón guardar configuración
-            document.getElementById('btnGuardarConfiguracion').addEventListener('click', guardarConfiguracion);
+            console.log('🔧 Inicializando botones...');
             
             // Botón regenerar equipos
-            document.getElementById('btnRegenerar').addEventListener('click', regenerarEquipos);
+            const btnRegenerar = document.getElementById('btnRegenerar');
+            if (btnRegenerar) {
+                btnRegenerar.addEventListener('click', regenerarEquipos);
+                console.log('✅ Botón regenerar configurado');
+            } else {
+                console.error('❌ Botón regenerar NO encontrado');
+            }
             
             // Botón guardar equipos
-            document.getElementById('btnGuardar').addEventListener('click', guardarEquipos);
+            const btnGuardar = document.getElementById('btnGuardar');
+            if (btnGuardar) {
+                btnGuardar.addEventListener('click', guardarEquipos);
+                console.log('✅ Botón guardar configurado');
+            } else {
+                console.error('❌ Botón guardar NO encontrado');
+            }
+            
+            console.log('🔧 Inicialización de botones completada');
         }
         
         // Función para mover jugadores entre equipos
@@ -695,36 +706,12 @@
             }
         }
         
-        // Guardar configuración del partido
-        async function guardarConfiguracion() {
-            try {
-                // Obtener todos los campos de configuración del partido
-                const horaPartido = document.getElementById('horaPartido').value;
-                const lugarPartido = document.getElementById('lugarPartido').value;
-                const precioPartido = document.getElementById('precioPartido').value;
-                const observacionesPartido = document.getElementById('observacionesPartido').value;
-                
-                // Validar campos obligatorios
-                if (!horaPartido || !lugarPartido || !precioPartido) {
-                    alert('❌ CONFIGURACIÓN INCOMPLETA\n\nDebes completar al menos:\n• Hora del partido\n• Lugar/Cancha\n• Precio por persona');
-                    return;
-                }
-                
-                // Mostrar confirmación
-                if (confirm('¿Guardar la configuración del partido?\n\nEsta información se usará cuando guardes los equipos.')) {
-                    // Aquí podrías hacer una llamada al backend para guardar la configuración
-                    // Por ahora, solo mostramos un mensaje de éxito
-                    alert('✅ Configuración guardada\n\nLa información del partido se ha actualizado y se usará cuando guardes los equipos.');
-                }
-                
-            } catch (error) {
-                console.error('Error al guardar configuración:', error);
-                alert('Error al guardar la configuración. Intenta de nuevo.');
-            }
-        }
+        
         
         // Guardar equipos
         async function guardarEquipos() {
+            console.log('🚀 Función guardarEquipos ejecutada');
+            console.log('Session ID:', sessionId);
             // VALIDAR BALANCE ANTES DE GUARDAR
             const equipoA = document.getElementById('dropZoneA');
             const equipoB = document.getElementById('dropZoneB');
@@ -744,13 +731,17 @@
                 return;
             }
             
-            // Validar que la fecha no sea del pasado
-            const fechaSeleccionada = new Date(fechaPartido);
+            // Validar que la fecha no sea del pasado (permitir hoy y futuras)
+            const fechaSeleccionada = new Date(fechaPartido + 'T00:00:00');
             const fechaActual = new Date();
             fechaActual.setHours(0, 0, 0, 0); // Solo fecha, sin hora
             
+            console.log('Fecha seleccionada:', fechaSeleccionada);
+            console.log('Fecha actual:', fechaActual);
+            console.log('Comparación:', fechaSeleccionada < fechaActual);
+            
             if (fechaSeleccionada < fechaActual) {
-                alert('❌ FECHA INVÁLIDA\n\nNo puedes seleccionar una fecha del pasado para el partido.');
+                alert('❌ FECHA INVÁLIDA\n\nNo puedes seleccionar una fecha del pasado para el partido.\n\nPuedes crear partidos para hoy o fechas futuras.');
                 return;
             }
             
@@ -760,7 +751,7 @@
             const precioPartido = document.getElementById('precioPartido').value;
             
             if (!horaPartido || !lugarPartido || !precioPartido) {
-                alert('❌ CONFIGURACIÓN INCOMPLETA\n\nDebes completar al menos:\n• Hora del partido\n• Lugar/Cancha\n• Precio por persona\n\nUsa el botón "Guardar Configuración" primero.');
+                alert('❌ CONFIGURACIÓN INCOMPLETA\n\nDebes completar al menos:\n• Hora del partido\n• Lugar/Cancha\n• Precio por persona\n\nObservaciones es opcional.\n\nCompleta estos campos y vuelve a intentar.');
                 return;
             }
             
