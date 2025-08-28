@@ -3,6 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 🚀 PWA META TAGS -->
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Fulbito">
+    
+    <!-- 🚀 PWA MANIFEST -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- 🚀 PWA ICONS -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/icons/icon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/icons/icon-180x180.png">
+    
     <title>Lista de Jugadores - Fulbito</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -268,5 +282,236 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 🚀 PWA JAVASCRIPT FILES -->
+    <script src="/js/offline-manager.js"></script>
+    <script src="/js/pwa-installer.js"></script>
+    <script src="/js/mobile-features.js"></script>
+    <script src="/js/pwa-main.js"></script>
+    
+    <!-- 🚀 SCRIPT OFFLINE COMPLETO -->
+    <script>
+        // 🚀 VARIABLES GLOBALES
+        let jugadores = [];
+        let jugadoresFiltrados = [];
+        
+        // 🚀 INICIALIZACIÓN AL CARGAR LA PÁGINA
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Inicializando lista de jugadores en modo offline...');
+            await cargarJugadoresOffline();
+            renderizarJugadores();
+            setupEventListeners();
+        });
+        
+        // 🚀 CARGAR JUGADORES DESDE INDEXEDDB (100% OFFLINE)
+        async function cargarJugadoresOffline() {
+            try {
+                // 🚀 ESPERAR A QUE OFFLINE MANAGER ESTÉ LISTO
+                while (!window.offlineManager) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                jugadores = await window.offlineManager.getAllJugadores();
+                console.log(`🚀 ${jugadores.length} jugadores cargados desde IndexedDB`);
+                
+                // 🚀 SI NO HAY JUGADORES, CARGAR DATOS DE EJEMPLO
+                if (jugadores.length === 0) {
+                    console.log('🚀 No hay jugadores, cargando datos de ejemplo...');
+                    await window.offlineManager.loadSampleData();
+                    jugadores = await window.offlineManager.getAllJugadores();
+                    console.log(`🚀 ${jugadores.length} jugadores de ejemplo cargados`);
+                }
+                
+                jugadoresFiltrados = [...jugadores];
+            } catch (error) {
+                console.error('❌ Error cargando jugadores offline:', error);
+                jugadores = [];
+                jugadoresFiltrados = [];
+            }
+        }
+        
+        // 🚀 RENDERIZAR JUGADORES EN LA UI
+        function renderizarJugadores() {
+            const container = document.querySelector('.row.g-4');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (jugadoresFiltrados.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle fa-2x mb-3"></i>
+                            <h5>No hay jugadores disponibles</h5>
+                            <p>Agrega el primer jugador al sistema</p>
+                            <a href="/jugador/nuevo" class="btn btn-custom">
+                                <i class="fas fa-plus me-2"></i>Agregar Primer Jugador
+                            </a>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            jugadoresFiltrados.forEach(jugador => {
+                const jugadorCard = crearTarjetaJugador(jugador);
+                container.appendChild(jugadorCard);
+            });
+        }
+        
+        // 🚀 CREAR TARJETA DE JUGADOR
+        function crearTarjetaJugador(jugador) {
+            const col = document.createElement('div');
+            col.className = 'col-lg-6 col-xl-4';
+            
+            const card = document.createElement('div');
+            card.className = 'card player-card h-100';
+            
+            card.innerHTML = `
+                <div class="player-header text-center">
+                    <h5 class="mb-2">${jugador.nombre}</h5>
+                    <div class="d-flex justify-content-center gap-2 mb-2">
+                        ${jugador.esArquero ? '<span class="goalkeeper-badge"><i class="fas fa-shield-alt me-1"></i>Arquero</span>' : ''}
+                        <span class="age-badge">
+                            <i class="fas fa-birthday-cake me-1"></i>
+                            ${jugador.edad} años
+                        </span>
+                    </div>
+                    <div class="age-badge">
+                        <i class="fas fa-user-tag me-1"></i>
+                        ${jugador.nivelEdad || 'Intermedio'}
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="skill-badge">
+                            <i class="fas fa-star me-2"></i>
+                            Calificación: ${jugador.calificacionTotal.toFixed(1)}
+                        </div>
+                    </div>
+                    
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Velocidad</small>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: ${jugador.velocidad * 10}%"></div>
+                            </div>
+                            <small class="text-muted">${jugador.velocidad}</small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Habilidad</small>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-info" style="width: ${jugador.habilidad * 10}%"></div>
+                            </div>
+                            <small class="text-muted">${jugador.habilidad}</small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Fuerza</small>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: ${jugador.fuerzaFisica * 10}%"></div>
+                            </div>
+                            <small class="text-muted">${jugador.fuerzaFisica}</small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Tiro</small>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-danger" style="width: ${jugador.tiro * 10}%"></div>
+                            </div>
+                            <small class="text-muted">${jugador.tiro}</small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Táctica</small>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-primary" style="width: ${jugador.tactica * 10}%"></div>
+                            </div>
+                            <small class="text-muted">${jugador.tactica}</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm flex-fill" onclick="editarJugador(${jugador.id})">
+                            <i class="fas fa-edit me-1"></i>Editar
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm flex-fill" onclick="eliminarJugador(${jugador.id})">
+                            <i class="fas fa-trash me-1"></i>Eliminar
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            col.appendChild(card);
+            return col;
+        }
+        
+        // 🚀 FUNCIONES DE ACCIÓN
+        function editarJugador(id) {
+            // 🚀 REDIRIGIR A FORMULARIO DE EDICIÓN
+            window.location.href = `/jugador/editar/${id}`;
+        }
+        
+        async function eliminarJugador(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar este jugador?')) {
+                try {
+                    await window.offlineManager.deleteJugador(id);
+                    
+                    // 🚀 ACTUALIZAR LISTA LOCAL
+                    jugadores = jugadores.filter(j => j.id !== id);
+                    jugadoresFiltrados = jugadoresFiltrados.filter(j => j.id !== id);
+                    
+                    // 🚀 RE-RENDERIZAR
+                    renderizarJugadores();
+                    
+                    // 🚀 MOSTRAR NOTIFICACIÓN
+                    if (window.offlineManager) {
+                        window.offlineManager.showNotification('Jugador Eliminado', 'El jugador ha sido eliminado exitosamente', 'success');
+                    }
+                    
+                    console.log('✅ Jugador eliminado exitosamente');
+                } catch (error) {
+                    console.error('❌ Error eliminando jugador:', error);
+                    alert('Error al eliminar el jugador');
+                }
+            }
+        }
+        
+        // 🚀 FUNCIÓN DE BÚSQUEDA
+        function buscarJugadores(termino) {
+            if (!termino) {
+                jugadoresFiltrados = [...jugadores];
+            } else {
+                jugadoresFiltrados = jugadores.filter(jugador => 
+                    jugador.nombre.toLowerCase().includes(termino.toLowerCase())
+                );
+            }
+            renderizarJugadores();
+        }
+        
+        // 🚀 CONFIGURAR EVENT LISTENERS
+        function setupEventListeners() {
+            // 🚀 BÚSQUEDA EN TIEMPO REAL
+            const searchInput = document.querySelector('input[name="nombre"]');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    buscarJugadores(e.target.value);
+                });
+            }
+            
+            // 🚀 FORMULARIO DE BÚSQUEDA
+            const searchForm = document.querySelector('form[action="/jugadores/buscar"]');
+            if (searchForm) {
+                searchForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const termino = searchInput.value;
+                    buscarJugadores(termino);
+                });
+            }
+        }
+        
+        // 🚀 EXPORTAR FUNCIONES PARA USO GLOBAL
+        window.buscarJugadores = buscarJugadores;
+        window.editarJugador = editarJugador;
+        window.eliminarJugador = eliminarJugador;
+    </script>
 </body>
 </html>

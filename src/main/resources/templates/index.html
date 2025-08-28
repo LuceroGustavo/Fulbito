@@ -3,9 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 🚀 PWA META TAGS -->
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Fulbito">
+    <meta name="msapplication-TileColor" content="#4CAF50">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <!-- 🚀 PWA MANIFEST -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- 🚀 PWA ICONS -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/icons/icon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/icons/icon-180x180.png">
+    
     <title>Fulbito - Organizador de Partidos de Fútbol</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- 🚀 PWA STYLES -->
     <style>
         .hero-section {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -38,14 +57,83 @@
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
             color: white;
         }
+        
+        /* 🚀 PWA INSTALL BUTTON STYLES */
+        .pwa-install-btn {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            transition: all 0.3s ease;
+            display: none;
+        }
+        .pwa-install-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+            color: white;
+        }
+        
+        /* 🚀 PWA STATUS INDICATOR */
+        .pwa-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: none;
+        }
+        .pwa-status.online {
+            background: #4CAF50;
+            color: white;
+        }
+        .pwa-status.offline {
+            background: #f44336;
+            color: white;
+        }
+        
+        /* 🚀 MOBILE OPTIMIZATIONS */
+        @media (max-width: 768px) {
+            .pwa-install-btn {
+                top: 70px;
+                right: 15px;
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+            .pwa-status {
+                top: 15px;
+                right: 15px;
+                font-size: 11px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- 🚀 PWA STATUS INDICATOR -->
+    <div id="pwa-status" class="pwa-status">
+        <i class="fas fa-circle me-1"></i>
+        <span id="pwa-status-text">Online</span>
+    </div>
+    
+    <!-- 🚀 PWA INSTALL BUTTON -->
+    <button id="pwa-install-btn" class="pwa-install-btn">
+        <i class="fas fa-download me-2"></i>Instalar App
+    </button>
+
     <!-- Navbar -->
-            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container">
-                            <a class="navbar-brand" href="/">
-                    <img src="/img/logo.png" alt="Fulbito Logo" height="45">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/img/logo.png" alt="Fulbito Logo" height="45">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -63,9 +151,9 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                                             <a class="nav-link" href="/partidos/historial">
-                         <i class="fas fa-history me-1"></i>Historial
-                     </a>
+                        <a class="nav-link" href="/partidos/historial">
+                            <i class="fas fa-history me-1"></i>Historial
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -100,7 +188,7 @@
                     <div class="card stats-card text-center h-100">
                         <div class="card-body">
                             <i class="fas fa-users fa-3x mb-3"></i>
-                            <h3 class="card-title" th:text="${estadisticas.totalJugadores}">0</h3>
+                            <h3 class="card-title" id="totalJugadores">0</h3>
                             <p class="card-text">Jugadores Registrados</p>
                         </div>
                     </div>
@@ -109,7 +197,7 @@
                     <div class="card stats-card text-center h-100">
                         <div class="card-body">
                             <i class="fas fa-shield-alt fa-3x mb-3"></i>
-                            <h3 class="card-title" th:text="${estadisticas.totalArqueros}">0</h3>
+                            <h3 class="card-title" id="totalArqueros">0</h3>
                             <p class="card-text">Arqueros Disponibles</p>
                         </div>
                     </div>
@@ -118,7 +206,7 @@
                     <div class="card stats-card text-center h-100">
                         <div class="card-body">
                             <i class="fas fa-trophy fa-3x mb-3"></i>
-                            <h3 class="card-title" th:text="${estadisticas.totalPartidos}">0</h3>
+                            <h3 class="card-title" id="totalPartidos">0</h3>
                             <p class="card-text">Partidos Jugados</p>
                         </div>
                     </div>
@@ -160,8 +248,6 @@
                     </div>
                 </div>
             </div>
-            
-
         </div>
     </section>
 
@@ -209,6 +295,58 @@
         </div>
     </footer>
 
+    <!-- 🚀 BOOTSTRAP & EXTERNAL SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 🚀 PWA JAVASCRIPT FILES -->
+    <script src="/js/offline-manager.js"></script>
+    <script src="/js/pwa-installer.js"></script>
+    <script src="/js/mobile-features.js"></script>
+    <script src="/js/pwa-main.js"></script>
+    
+    <!-- 🚀 SCRIPT OFFLINE COMPLETO -->
+    <script>
+        // 🚀 VARIABLES GLOBALES
+        let estadisticas = {
+            totalJugadores: 0,
+            totalArqueros: 0,
+            totalPartidos: 0
+        };
+        
+        // 🚀 INICIALIZACIÓN AL CARGAR LA PÁGINA
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Inicializando página principal en modo offline...');
+            await cargarEstadisticasOffline();
+            actualizarUI();
+        });
+        
+        // 🚀 CARGAR ESTADÍSTICAS DESDE INDEXEDDB (100% OFFLINE)
+        async function cargarEstadisticasOffline() {
+            try {
+                // 🚀 ESPERAR A QUE OFFLINE MANAGER ESTÉ LISTO
+                while (!window.offlineManager) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                estadisticas = await window.offlineManager.getEstadisticas();
+                console.log('🚀 Estadísticas cargadas desde IndexedDB:', estadisticas);
+                
+            } catch (error) {
+                console.error('❌ Error cargando estadísticas offline:', error);
+                estadisticas = { totalJugadores: 0, totalArqueros: 0, totalPartidos: 0 };
+            }
+        }
+        
+        // 🚀 ACTUALIZAR UI CON ESTADÍSTICAS
+        function actualizarUI() {
+            document.getElementById('totalJugadores').textContent = estadisticas.totalJugadores;
+            document.getElementById('totalArqueros').textContent = estadisticas.totalArqueros;
+            document.getElementById('totalPartidos').textContent = estadisticas.totalPartidos;
+        }
+        
+        // 🚀 EXPORTAR FUNCIONES PARA USO GLOBAL
+        window.cargarEstadisticasOffline = cargarEstadisticasOffline;
+        window.actualizarUI = actualizarUI;
+    </script>
 </body>
 </html>
