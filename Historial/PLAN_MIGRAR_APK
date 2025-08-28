@@ -1,0 +1,112 @@
+🏗️ Plan de desarrollo APK – Fulbito
+Etapa 1: Preparación del proyecto
+
+Abrí Android Studio y creá un nuevo proyecto:
+
+Lenguaje: Java (ya conocés el stack).
+
+Tipo: Empty Activity.
+
+Min SDK: Android 10 (API 29) o superior.
+
+Definí la estructura básica de paquetes:
+
+com.fulbito/
+├── model/          # Clases Jugador, Partido
+├── dao/            # Clases para SQLite / Room
+├── service/        # Lógica de armado de equipos
+├── ui/             # Activities y Fragments
+└── utils/          # Funciones auxiliares (compartir WhatsApp, validaciones)
+
+Etapa 2: Migrar la lógica de negocio
+
+Reutilizá tus clases Jugador, Partido y servicios de Spring Boot.
+
+Adaptá el código para no depender de Spring Boot ni JPA.
+
+Todo se maneja como POJOs y listas en memoria o SQLite.
+
+IA de Cursor puede ayudarte a:
+
+Convertir métodos de cálculo de puntajes y balanceo de equipos a Android.
+
+Adaptar lógica de “prevención de repetición” usando almacenamiento local.
+
+Etapa 3: Base de datos local
+
+Usar SQLite / Room:
+
+Guardar jugadores y partidos en el dispositivo.
+
+Room facilita consultas y actualizaciones.
+
+Definir entidades equivalentes a tus clases Java:
+
+JugadorEntity
+
+PartidoEntity
+
+IA de Cursor puede generar DAO y repositorios para CRUD de jugadores y partidos.
+
+Etapa 4: Interfaz de usuario
+
+Pantallas principales:
+
+Pantalla de inicio → “Agregar jugador”, “Formar equipos”, “Ver historial”.
+
+Pantalla de agregar jugador → formulario con 5 atributos + nombre + edad + arquero.
+
+Pantalla de equipos → mostrar Equipo A / Equipo B con puntajes.
+
+Pantalla de historial → lista de partidos anteriores.
+
+IA de Cursor puede generar XML de layouts + clases Activity/Fragment listas para usar.
+
+Etapa 5: Compartir resultados por WhatsApp
+
+Botón “Compartir” en la pantalla de equipos:
+
+Genera un texto formateado con nombres y puntajes.
+
+Llama al intent de Android para enviar a WhatsApp:
+
+Intent sendIntent = new Intent();
+sendIntent.setAction(Intent.ACTION_SEND);
+sendIntent.putExtra(Intent.EXTRA_TEXT, textoEquipos);
+sendIntent.setType("text/plain");
+startActivity(Intent.createChooser(sendIntent, "Compartir con"));
+
+
+IA de Cursor puede ayudarte a generar este código listo para integrar.
+
+Etapa 6: Testeo
+
+Probar la app en emuladores y teléfonos reales.
+
+Verificar que:
+
+Los equipos se arman correctamente.
+
+Se puede agregar/editar jugadores.
+
+Se guarda historial en SQLite.
+
+Compartir WhatsApp funciona.
+
+Todo funciona offline.
+
+Etapa 7: Generar APK y publicar
+
+En Android Studio → Build → Build Bundle(s) / APK(s) → Build APK(s)
+
+Probar el APK en tu propio celular.
+
+Cuando esté estable → Google Play Console → subir versión gratuita.
+
+Tip de desarrollo
+
+Empezá con funcionalidad mínima: agregar jugadores, armar equipos, compartir WhatsApp.
+
+Luego agregá historial, indicadores de balance, categorías de edad, etc.
+
+Usá la IA de Cursor para generar pantallas, DAO y funciones, así avanzás rápido sin reescribir todo a mano.

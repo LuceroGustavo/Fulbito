@@ -90,6 +90,9 @@
 
 ## 📊 **ESTADO DE LA DOCUMENTACIÓN:**
 
+### **✅ ACTUALIZADOS (Agosto 2025):**
+- `IMPLEMENTACION_PRIORIDADES_CORREGIDAS.md` - **NUEVO - Sistema de prioridades corregido**
+
 ### **✅ ACTUALIZADOS (Diciembre 2024):**
 - `evolucion_de_APP.md` - **COMPLETAMENTE ACTUALIZADO**
 - `IMPLEMENTACION_ELIMINACION_ROBUSTA.md` - **NUEVO**
@@ -109,6 +112,7 @@
 - `evolucion_de_APP.md` - **ARCHIVO PRINCIPAL**
 
 ### **🛠️ IMPLEMENTACIONES TÉCNICAS:**
+- `IMPLEMENTACION_PRIORIDADES_CORREGIDAS.md` - **NUEVO - Sistema de prioridades corregido**
 - `IMPLEMENTACION_ELIMINACION_ROBUSTA.md`
 - `IMPLEMENTACION_BALANCE_POR_EDAD.md`
 
@@ -141,6 +145,11 @@
 ---
 
 ## 🚀 **PRÓXIMOS PASOS DE DOCUMENTACIÓN:**
+
+### **Inmediatos (Agosto 2025):**
+1. ✅ **Implementar** sistema de prioridades corregido
+2. ✅ **Corregir** distribución de arqueros
+3. ✅ **Optimizar** balance por edad y calificación
 
 ### **Inmediatos (Diciembre 2024):**
 1. ✅ **Completar** documentación de eliminación robusta
@@ -209,7 +218,7 @@
 
 ---
 
-**Última actualización del índice:** Diciembre 2024  
+**Última actualización del índice:** Agosto 2025  
 **Versión del índice:** 1.0  
-**Total de archivos:** 7  
-**Estado general:** ✅ **COMPLETAMENTE ORGANIZADO Y ACTUALIZADO**
+**Total de archivos:** 8  
+**Estado general:** ✅ **COMPLETAMENTE ORGANIZADO, ACTUALIZADO Y CON SISTEMA CORREGIDO**

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -195,7 +196,7 @@ public class FormacionEquiposService {
      * Formar equipos balanceados para sistema temporal
      */
     private Map<String, List<Jugador>> formarEquiposBalanceadosTemporales(List<Jugador> jugadores) {
-        // Separar arqueros del resto de jugadores
+        // PRIORIDAD 1: Separar arqueros del resto de jugadores
         List<Jugador> arqueros = jugadores.stream()
                 .filter(Jugador::getEsArquero)
                 .collect(Collectors.toList());
@@ -204,21 +205,18 @@ public class FormacionEquiposService {
                 .filter(j -> !j.getEsArquero())
                 .collect(Collectors.toList());
         
-        // Ordenar jugadores de campo por calificación (descendente)
-        jugadoresCampo.sort((j1, j2) -> Double.compare(j2.getCalificacionTotal(), j1.getCalificacionTotal()));
-        
-        // Ordenar jugadores de campo por edad (descendente) para balance por edad
+        // PRIORIDAD 2: Ordenar jugadores de campo por edad (descendente) para balance por edad
         jugadoresCampo.sort((j1, j2) -> Integer.compare(j2.getEdad(), j1.getEdad()));
         
         List<Jugador> equipoA = new ArrayList<>();
         List<Jugador> equipoB = new ArrayList<>();
         
-        // Distribuir arqueros equitativamente
+        // PRIORIDAD 1: Distribuir arqueros equitativamente (MÁXIMO 1 POR EQUIPO)
         if (arqueros.size() >= 2) {
             equipoA.add(arqueros.get(0));
             equipoB.add(arqueros.get(1));
         } else if (arqueros.size() == 1) {
-            // Si solo hay un arquero, asignarlo al equipo con menos jugadores
+            // Si solo hay un arquero, asignarlo al equipo A
             equipoA.add(arqueros.get(0));
         }
         
@@ -226,14 +224,14 @@ public class FormacionEquiposService {
         int totalJugadores = jugadores.size();
         int jugadoresPorEquipo = totalJugadores / 2;
         
-        // Distribuir jugadores de campo de manera equilibrada (ALTERNADO para balance por edad)
+        // PRIORIDAD 2: Distribuir jugadores de campo de manera equilibrada (ALTERNADO para balance por edad)
         for (int i = 0; i < jugadoresCampo.size(); i++) {
             if (i % 2 == 0) {
                 // Jugadores pares van al equipo A (mayores primero)
                 if (equipoA.size() < jugadoresPorEquipo) {
-                equipoA.add(jugadoresCampo.get(i));
-            } else {
-                equipoB.add(jugadoresCampo.get(i));
+                    equipoA.add(jugadoresCampo.get(i));
+                } else {
+                    equipoB.add(jugadoresCampo.get(i));
                 }
             } else {
                 // Jugadores impares van al equipo B (jóvenes primero)
@@ -245,8 +243,11 @@ public class FormacionEquiposService {
             }
         }
         
-        // Balancear equipos por calificación Y edad
+        // PRIORIDAD 3: Balancear equipos por calificación Y edad (manteniendo distribución de arqueros)
         balancearEquiposTemporales(equipoA, equipoB);
+        
+        // VALIDACIÓN FINAL: Verificar que no haya más de 1 arquero por equipo
+        validarDistribucionArqueros(equipoA, equipoB);
         
         Map<String, List<Jugador>> resultado = new HashMap<>();
         resultado.put("equipoA", equipoA);
@@ -266,13 +267,23 @@ public class FormacionEquiposService {
         double promedioEdadA = calcularPromedioEdadEquipo(equipoA);
         double promedioEdadB = calcularPromedioEdadEquipo(equipoB);
         
-        // Si la diferencia de calificación es mayor a 0.5, intentar balancear
+        // PRIORIDAD 3: Si la diferencia de calificación es mayor a 0.5, intentar balancear
         if (Math.abs(promedioA - promedioB) > 0.5) {
             // Buscar el mejor intercambio posible considerando calificación Y edad
             for (int i = 0; i < equipoA.size(); i++) {
                 for (int j = 0; j < equipoB.size(); j++) {
                     Jugador jugadorA = equipoA.get(i);
                     Jugador jugadorB = equipoB.get(j);
+                    
+                    // PRIORIDAD 1: NO intercambiar arqueros si rompe la distribución
+                    if (jugadorA.getEsArquero() && jugadorB.getEsArquero()) {
+                        continue; // Saltar si ambos son arqueros
+                    }
+                    
+                    // Verificar que el intercambio no rompa la distribución de arqueros
+                    if (!esIntercambioValidoParaArqueros(equipoA, equipoB, i, j)) {
+                        continue; // Saltar si el intercambio rompe la distribución
+                    }
                     
                     // Calcular promedios después del intercambio
                     double nuevoPromedioA = (promedioA * equipoA.size() - jugadorA.getCalificacionTotal() + jugadorB.getCalificacionTotal()) / equipoA.size();
@@ -292,19 +303,30 @@ public class FormacionEquiposService {
                     if (nuevaDiferencia < diferenciaActual && nuevaDiferenciaEdad <= diferenciaEdadActual) {
                         equipoA.set(i, jugadorB);
                         equipoB.set(j, jugadorA);
+                        System.out.println("✅ Intercambio realizado para mejorar balance de calificación y edad");
                         return; // Solo un intercambio por iteración
                     }
                 }
             }
         }
         
-        // Si la diferencia de edad es mayor a 2 años, intentar balancear por edad
+        // PRIORIDAD 2: Si la diferencia de edad es mayor a 2 años, intentar balancear por edad
         if (Math.abs(promedioEdadA - promedioEdadB) > 2.0) {
             // Buscar el mejor intercambio posible solo por edad
             for (int i = 0; i < equipoA.size(); i++) {
                 for (int j = 0; j < equipoB.size(); j++) {
                     Jugador jugadorA = equipoA.get(i);
                     Jugador jugadorB = equipoB.get(j);
+                    
+                    // PRIORIDAD 1: NO intercambiar arqueros si rompe la distribución
+                    if (jugadorA.getEsArquero() && jugadorB.getEsArquero()) {
+                        continue; // Saltar si ambos son arqueros
+                    }
+                    
+                    // Verificar que el intercambio no rompa la distribución de arqueros
+                    if (!esIntercambioValidoParaArqueros(equipoA, equipoB, i, j)) {
+                        continue; // Saltar si el intercambio rompe la distribución
+                    }
                     
                     // Calcular promedios de edad después del intercambio
                     double nuevoPromedioEdadA = (promedioEdadA * equipoA.size() - jugadorA.getEdad() + jugadorB.getEdad()) / equipoA.size();
@@ -323,8 +345,9 @@ public class FormacionEquiposService {
                         
                         // Solo si no empeora mucho la calificación (máximo 0.3 puntos)
                         if (nuevaDiferencia <= diferenciaActual + 0.3) {
-                        equipoA.set(i, jugadorB);
-                        equipoB.set(j, jugadorA);
+                            equipoA.set(i, jugadorB);
+                            equipoB.set(j, jugadorA);
+                            System.out.println("✅ Intercambio realizado para mejorar balance de edad");
                             return; // Solo un intercambio por iteración
                         }
                     }
@@ -353,6 +376,115 @@ public class FormacionEquiposService {
                 .mapToDouble(Jugador::getEdad)
                 .average()
                 .orElse(0.0);
+    }
+    
+    /**
+     * Validar que no haya más de 1 arquero por equipo
+     */
+    private void validarDistribucionArqueros(List<Jugador> equipoA, List<Jugador> equipoB) {
+        int arquerosEquipoA = (int) equipoA.stream().filter(Jugador::getEsArquero).count();
+        int arquerosEquipoB = (int) equipoB.stream().filter(Jugador::getEsArquero).count();
+
+        if (arquerosEquipoA > 1) {
+            // Encontrar el jugador con la menor calificación para reemplazar
+            Jugador jugadorAReemplazar = equipoA.stream()
+                    .filter(j -> !j.getEsArquero())
+                    .min(Comparator.comparingDouble(Jugador::getCalificacionTotal))
+                    .orElse(null);
+
+            if (jugadorAReemplazar != null) {
+                // Encontrar el mejor jugador de campo para reemplazar al arquero
+                Jugador mejorJugadorCampo = equipoB.stream()
+                        .filter(j -> !j.getEsArquero())
+                        .max(Comparator.comparingDouble(Jugador::getCalificacionTotal))
+                        .orElse(null);
+
+                if (mejorJugadorCampo != null) {
+                    // Realizar el intercambio
+                    equipoA.remove(jugadorAReemplazar);
+                    equipoA.add(mejorJugadorCampo);
+                    equipoB.remove(mejorJugadorCampo);
+                    equipoB.add(jugadorAReemplazar);
+                    System.out.println("⚠️ Se reemplazó un arquero en el equipo A por un jugador de campo mejor calificado.");
+                } else {
+                    System.err.println("❌ No se pudo encontrar un jugador de campo mejor calificado para reemplazar al arquero en el equipo A.");
+                }
+            } else {
+                System.err.println("❌ No se pudo encontrar un jugador para reemplazar al arquero en el equipo A.");
+            }
+        }
+
+        if (arquerosEquipoB > 1) {
+            // Encontrar el jugador con la menor calificación para reemplazar
+            Jugador jugadorBReemplazar = equipoB.stream()
+                    .filter(j -> !j.getEsArquero())
+                    .min(Comparator.comparingDouble(Jugador::getCalificacionTotal))
+                    .orElse(null);
+
+            if (jugadorBReemplazar != null) {
+                // Encontrar el mejor jugador de campo para reemplazar al arquero
+                Jugador mejorJugadorCampo = equipoA.stream()
+                        .filter(j -> !j.getEsArquero())
+                        .max(Comparator.comparingDouble(Jugador::getCalificacionTotal))
+                        .orElse(null);
+
+                if (mejorJugadorCampo != null) {
+                    // Realizar el intercambio
+                    equipoB.remove(jugadorBReemplazar);
+                    equipoB.add(mejorJugadorCampo);
+                    equipoA.remove(mejorJugadorCampo);
+                    equipoA.add(jugadorBReemplazar);
+                    System.out.println("⚠️ Se reemplazó un arquero en el equipo B por un jugador de campo mejor calificado.");
+                } else {
+                    System.err.println("❌ No se pudo encontrar un jugador de campo mejor calificado para reemplazar al arquero en el equipo B.");
+                }
+            } else {
+                System.err.println("❌ No se pudo encontrar un jugador para reemplazar al arquero en el equipo B.");
+            }
+        }
+    }
+    
+    /**
+     * Validar distribución de arqueros en equipos temporales
+     */
+    private boolean validarDistribucionArquerosEnEquipos(EquipoTemporal equipoTemporal) {
+        if (equipoTemporal.getEquipoA() == null || equipoTemporal.getEquipoB() == null) {
+            return false;
+        }
+        
+        int arquerosEquipoA = (int) equipoTemporal.getEquipoA().stream().filter(Jugador::getEsArquero).count();
+        int arquerosEquipoB = (int) equipoTemporal.getEquipoB().stream().filter(Jugador::getEsArquero).count();
+        
+        // Verificar que no haya más de 1 arquero por equipo
+        if (arquerosEquipoA > 1 || arquerosEquipoB > 1) {
+            System.out.println("⚠️ Equipo A tiene " + arquerosEquipoA + " arqueros, Equipo B tiene " + arquerosEquipoB + " arqueros");
+            return false;
+        }
+        
+        System.out.println("✅ Distribución de arqueros correcta: Equipo A (" + arquerosEquipoA + "), Equipo B (" + arquerosEquipoB + ")");
+        return true;
+    }
+    
+    /**
+     * Verificar si un intercambio entre equipos mantiene la distribución correcta de arqueros
+     */
+    private boolean esIntercambioValidoParaArqueros(List<Jugador> equipoA, List<Jugador> equipoB, int indiceA, int indiceB) {
+        // Crear copias temporales para simular el intercambio
+        List<Jugador> equipoATemp = new ArrayList<>(equipoA);
+        List<Jugador> equipoBTemp = new ArrayList<>(equipoB);
+        
+        // Simular el intercambio
+        Jugador jugadorA = equipoATemp.get(indiceA);
+        Jugador jugadorB = equipoBTemp.get(indiceB);
+        equipoATemp.set(indiceA, jugadorB);
+        equipoBTemp.set(indiceB, jugadorA);
+        
+        // Verificar que después del intercambio no haya más de 1 arquero por equipo
+        int arquerosEquipoATemp = (int) equipoATemp.stream().filter(Jugador::getEsArquero).count();
+        int arquerosEquipoBTemp = (int) equipoBTemp.stream().filter(Jugador::getEsArquero).count();
+        
+        // El intercambio es válido si mantiene máximo 1 arquero por equipo
+        return arquerosEquipoATemp <= 1 && arquerosEquipoBTemp <= 1;
     }
     
     /**
@@ -425,6 +557,12 @@ public class FormacionEquiposService {
             throw new RuntimeException("Los jugadores deben estar en equipos diferentes para intercambiarse");
         }
         
+        // PRIORIDAD 1: Verificar que el intercambio no rompa la distribución de arqueros
+        if (!esIntercambioValidoParaArqueros(equipoTemporal.getEquipoA(), equipoTemporal.getEquipoB(), 
+                equipoTemporal.getEquipoA().indexOf(jugadorA), equipoTemporal.getEquipoB().indexOf(jugadorB))) {
+            throw new RuntimeException("No se puede realizar el intercambio. Rompería la distribución correcta de arqueros.");
+        }
+        
         // Realizar el intercambio
         if (equipoOrigenA.equals("A")) {
             equipoTemporal.getEquipoA().remove(jugadorA);
@@ -472,6 +610,15 @@ public class FormacionEquiposService {
             throw new RuntimeException("No se encontró el jugador en el equipo origen");
         }
         
+        // PRIORIDAD 1: Verificar que el movimiento no rompa la distribución de arqueros
+        if (jugadorAMover.getEsArquero()) {
+            // Si el jugador a mover es arquero, verificar que el equipo destino no tenga ya un arquero
+            int arquerosDestino = (int) equipoDestinoList.stream().filter(Jugador::getEsArquero).count();
+            if (arquerosDestino >= 1) {
+                throw new RuntimeException("No se puede mover el arquero. El equipo destino ya tiene un arquero.");
+            }
+        }
+        
         // Agregar jugador al equipo destino
         equipoDestinoList.add(jugadorAMover);
         
@@ -491,19 +638,28 @@ public class FormacionEquiposService {
         EquipoTemporal equipoTemporal = obtenerEquipoTemporal(sessionId);
         if (equipoTemporal == null) return false;
         
-        // Verificar que ambos equipos tengan la misma cantidad
+        // PRIORIDAD 1: Verificar que ambos equipos tengan la misma cantidad
         int cantidadEquipoA = equipoTemporal.getEquipoA().size();
         int cantidadEquipoB = equipoTemporal.getEquipoB().size();
         
         if (cantidadEquipoA != cantidadEquipoB) {
+            System.out.println("❌ Los equipos no tienen la misma cantidad de jugadores");
             return false;
         }
         
-        // Verificar que no se repitan equipos de partidos anteriores
+        // PRIORIDAD 1: Verificar distribución de arqueros (máximo 1 por equipo)
+        if (!validarDistribucionArquerosEnEquipos(equipoTemporal)) {
+            System.out.println("❌ Distribución incorrecta de arqueros en los equipos");
+            return false;
+        }
+        
+        // PRIORIDAD 4: Verificar que no se repitan equipos de partidos anteriores
         if (verificarRepeticionEquipos(equipoTemporal)) {
+            System.out.println("❌ Los equipos se repiten de partidos anteriores");
             return false;
         }
         
+        System.out.println("✅ Validación de equipos exitosa");
         return true;
     }
     
