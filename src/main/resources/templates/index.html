@@ -4,13 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 🚀 PWA META TAGS -->
-    <meta name="theme-color" content="#4CAF50">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Fulbito">
-    <meta name="msapplication-TileColor" content="#4CAF50">
-    <meta name="msapplication-config" content="/browserconfig.xml">
+         <!-- 🚀 PWA META TAGS -->
+     <meta name="theme-color" content="#4CAF50">
+     <meta name="mobile-web-app-capable" content="yes">
+     <meta name="apple-mobile-web-app-capable" content="yes">
+     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+     <meta name="apple-mobile-web-app-title" content="Fulbito">
+     <meta name="msapplication-TileColor" content="#4CAF50">
+     <meta name="msapplication-config" content="/browserconfig.xml">
+     <meta name="application-name" content="Fulbito">
+     <meta name="msapplication-TileImage" content="/img/icons/icon-144x144.png">
+     
+     <!-- 🚀 PWA CRÍTICO PARA CHROME -->
+     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+     <meta name="format-detection" content="telephone=no">
+     <meta name="msapplication-tap-highlight" content="no">
     
     <!-- 🚀 PWA MANIFEST -->
     <link rel="manifest" href="/manifest.json">
@@ -176,6 +184,21 @@
                     <i class="fas fa-random me-2"></i>Formar Equipos
                 </a>
             </div>
+            
+            <!-- 🚀 BOTÓN MANUAL DE INSTALACIÓN PWA -->
+            <div class="text-center mt-4" id="pwa-install-section" style="display: none;">
+              <button 
+                id="pwa-install-button" 
+                class="btn btn-warning btn-lg px-4 py-3"
+                onclick="handleManualInstallBasic()"
+                style="background: linear-gradient(135deg, #ffc107, #ff8f00); border: none; box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);">
+                <i class="fas fa-download me-2"></i>
+                📱 Instalar App Fulbito
+              </button>
+              <p class="text-white mt-2 mb-0" style="font-size: 0.9rem; opacity: 0.9;">
+                Instala Fulbito como app nativa en tu dispositivo
+              </p>
+            </div>
         </div>
     </section>
 
@@ -316,16 +339,318 @@
         // 🚀 INICIALIZACIÓN AL CARGAR LA PÁGINA
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Inicializando página principal en modo offline...');
-            await cargarEstadisticasOffline();
-            actualizarUI();
+            
+            // 🚀 REGISTRAR SERVICE WORKER INMEDIATAMENTE
+            registerServiceWorker();
+            
+            // 🚀 MOSTRAR BOTÓN MANUAL DE INSTALACIÓN INMEDIATAMENTE
+            showManualInstallButtonImmediately();
+            
+            // 🚀 INTENTAR INICIALIZAR PWA (PERO NO BLOQUEAR)
+            try {
+                await waitForPWAComponents();
+                console.log('✅ PWA inicializada correctamente');
+                
+                // 🚀 CARGAR ESTADÍSTICAS DESPUÉS DE QUE PWA ESTÉ LISTA
+                await cargarEstadisticasOffline();
+                actualizarUI();
+                
+            } catch (error) {
+                console.warn('⚠️ PWA no disponible, continuando en modo básico:', error);
+                // 🚀 CARGAR ESTADÍSTICAS POR DEFECTO
+                cargarEstadisticasPorDefecto();
+            }
         });
+        
+        // 🚀 REGISTRAR SERVICE WORKER
+        async function registerServiceWorker() {
+            try {
+                if ('serviceWorker' in navigator) {
+                    console.log('🚀 Registrando Service Worker...');
+                    
+                    const registration = await navigator.serviceWorker.register('/sw.js', {
+                        scope: '/'
+                    });
+                    
+                    console.log('✅ Service Worker registrado exitosamente:', registration);
+                    
+                    // 🚀 VERIFICAR ESTADO DE INSTALACIÓN
+                    if (registration.installing) {
+                        console.log('📱 Service Worker instalando...');
+                    } else if (registration.waiting) {
+                        console.log('⏳ Service Worker esperando...');
+                    } else if (registration.active) {
+                        console.log('✅ Service Worker activo');
+                    }
+                    
+                    // 🚀 ESCUCHAR EVENTOS DE INSTALACIÓN PWA
+                    setupPWAInstallListeners();
+                    
+                } else {
+                    console.warn('⚠️ Service Worker no soportado en este navegador');
+                }
+            } catch (error) {
+                console.error('❌ Error registrando Service Worker:', error);
+            }
+        }
+        
+        // 🚀 CONFIGURAR EVENTOS DE INSTALACIÓN PWA
+        function setupPWAInstallListeners() {
+            console.log('🚀 Configurando eventos de instalación PWA...');
+            
+            // 🎯 ESCUCHAR PROMPT DE INSTALACIÓN
+            window.addEventListener('beforeinstallprompt', (event) => {
+                console.log('📱 PROMPT DE INSTALACIÓN PWA DETECTADO!');
+                
+                // 🎯 PREVENIR QUE SE MUESTRE AUTOMÁTICAMENTE
+                event.preventDefault();
+                
+                // 🎯 GUARDAR EL EVENTO
+                window.deferredPrompt = event;
+                
+                // 🎯 MOSTRAR BOTÓN DE INSTALACIÓN AUTOMÁTICA
+                showAutomaticInstallButton();
+                
+                console.log('✅ Prompt de instalación PWA configurado correctamente');
+            });
+            
+            // 🎯 ESCUCHAR APP INSTALADA
+            window.addEventListener('appinstalled', (event) => {
+                console.log('✅ Fulbito instalado como PWA exitosamente!');
+                
+                // 🎯 LIMPIAR PROMPT
+                window.deferredPrompt = null;
+                
+                // 🎯 OCULTAR BOTÓN DE INSTALACIÓN
+                hideInstallButton();
+                
+                // 🎯 MOSTRAR MENSAJE DE ÉXITO
+                showInstallationSuccess();
+            });
+            
+            // 🎯 ESCUCHAR MENSAJES DEL SERVICE WORKER
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.addEventListener('message', (event) => {
+                    console.log('📱 Mensaje recibido del Service Worker:', event.data);
+                    
+                    if (event.data.type === 'PWA_INSTALL_PROMPT_AVAILABLE') {
+                        console.log('🚀 PROMPT DE INSTALACIÓN PWA DISPONIBLE VÍA SERVICE WORKER!');
+                        
+                        // 🎯 MOSTRAR BOTÓN DE INSTALACIÓN AUTOMÁTICA
+                        showAutomaticInstallButton();
+                    }
+                });
+            }
+            
+            console.log('✅ Eventos de instalación PWA configurados');
+        }
+        
+        // 🚀 MOSTRAR BOTÓN DE INSTALACIÓN AUTOMÁTICA
+        function showAutomaticInstallButton() {
+            console.log('🚀 Mostrando botón de instalación automática...');
+            
+            const installSection = document.getElementById('pwa-install-section');
+            if (installSection) {
+                // 🎯 CAMBIAR EL BOTÓN PARA USAR INSTALACIÓN AUTOMÁTICA
+                installSection.innerHTML = `
+                    <button 
+                        id="pwa-install-button" 
+                        class="btn btn-success btn-lg px-4 py-3"
+                        onclick="installPWAAutomatically()"
+                        style="background: linear-gradient(135deg, #28a745, #20c997); border: none; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">
+                        <i class="fas fa-download me-2"></i>
+                        🚀 Instalar Fulbito como App
+                    </button>
+                    <p class="text-white mt-2 mb-0" style="font-size: 0.9rem; opacity: 0.9;">
+                        Chrome detectó que Fulbito es instalable como PWA
+                    </p>
+                `;
+                
+                console.log('✅ Botón de instalación automática visible');
+            }
+        }
+        
+        // 🚀 INSTALAR PWA AUTOMÁTICAMENTE
+        async function installPWAAutomatically() {
+            console.log('🚀 Iniciando instalación automática de PWA...');
+            
+            if (!window.deferredPrompt) {
+                console.warn('⚠️ No hay prompt de instalación disponible');
+                return;
+            }
+            
+            try {
+                // 🎯 MOSTRAR PROMPT DE INSTALACIÓN
+                window.deferredPrompt.prompt();
+                
+                // 🎯 ESPERAR RESPUESTA DEL USUARIO
+                const { outcome } = await window.deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    console.log('✅ Usuario aceptó la instalación automática');
+                } else {
+                    console.log('❌ Usuario rechazó la instalación automática');
+                }
+                
+                // 🎯 LIMPIAR PROMPT
+                window.deferredPrompt = null;
+                
+            } catch (error) {
+                console.error('❌ Error en instalación automática:', error);
+            }
+        }
+        
+        // 🚀 OCULTAR BOTÓN DE INSTALACIÓN
+        function hideInstallButton() {
+            const installSection = document.getElementById('pwa-install-section');
+            if (installSection) {
+                installSection.style.display = 'none';
+                console.log('✅ Botón de instalación oculto');
+            }
+        }
+        
+        // 🚀 MOSTRAR MENSAJE DE ÉXITO
+        function showInstallationSuccess() {
+            const successMessage = `
+                <div class="alert alert-success" role="alert" style="margin: 20px;">
+                    <h5>🎉 ¡Fulbito Instalado Exitosamente!</h5>
+                    <p>Ya puedes acceder a Fulbito desde tu pantalla de inicio</p>
+                    <p>La app funcionará offline y se actualizará automáticamente</p>
+                    <button onclick="this.parentElement.remove()" class="btn btn-success mt-2">¡Perfecto!</button>
+                </div>
+            `;
+            
+            const installSection = document.getElementById('pwa-install-section');
+            if (installSection) {
+                installSection.innerHTML = successMessage;
+            }
+        }
+        
+        // 🚀 ESPERAR COMPONENTES PWA
+        async function waitForPWAComponents() {
+            const maxWaitTime = 15000; // 15 segundos
+            const checkInterval = 100; // 100ms
+            let elapsedTime = 0;
+            
+            while (elapsedTime < maxWaitTime) {
+                if (window.offlineManager && window.pwaInstaller && window.mobileFeatures) {
+                    console.log('✅ Todos los componentes PWA están listos');
+                    return true;
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, checkInterval));
+                elapsedTime += checkInterval;
+            }
+            
+            console.warn('⚠️ Timeout esperando componentes PWA, continuando sin ellos');
+            return false;
+        }
+        
+        // 🚀 MOSTRAR BOTÓN MANUAL INMEDIATAMENTE (SIN ESPERAR PWA)
+        function showManualInstallButtonImmediately() {
+            console.log('🚀 Mostrando botón manual de instalación inmediatamente...');
+            const installSection = document.getElementById('pwa-install-section');
+            if (installSection) {
+                installSection.style.display = 'block';
+                console.log('✅ Botón manual de instalación visible inmediatamente');
+                
+                // 🚀 CONFIGURAR CLICK HANDLER BÁSICO INMEDIATAMENTE
+                const installButton = document.getElementById('pwa-install-button');
+                if (installButton) {
+                    // 🚀 AGREGAR EVENT LISTENER ADICIONAL COMO RESPALDO
+                    installButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🚀 Botón manual clickeado - ejecutando función básica...');
+                        handleManualInstallBasic();
+                    });
+                    
+                    console.log('✅ Click handler básico configurado y funcionando');
+                }
+            } else {
+                console.warn('⚠️ No se encontró la sección de instalación manual');
+            }
+        }
+        
+        // 🚀 MANEJAR INSTALACIÓN MANUAL BÁSICA (SIN PWA)
+        function handleManualInstallBasic() {
+            console.log('🚀 Botón manual clickeado - mostrando instrucciones básicas...');
+            
+            const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+            const isAndroid = /Android/.test(navigator.userAgent);
+            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            let instructions = '';
+            
+            if (isIOS) {
+                instructions = `
+                    <div class="alert alert-info" role="alert" style="margin: 20px;">
+                        <h5>📱 Instalar en iPhone/iPad:</h5>
+                        <ol>
+                            <li>Toca el botón <strong>Compartir</strong> (□↑) en Safari</li>
+                            <li>Selecciona <strong>"Añadir a pantalla de inicio"</strong></li>
+                            <li>Toca <strong>"Añadir"</strong></li>
+                        </ol>
+                        <button onclick="this.parentElement.remove()" class="btn btn-primary mt-2">Entendido</button>
+                    </div>
+                `;
+            } else if (isAndroid) {
+                instructions = `
+                    <div class="alert alert-info" role="alert" style="margin: 20px;">
+                        <h5>📱 Instalar en Android:</h5>
+                        <ol>
+                            <li>Toca el menú (⋮) en Chrome</li>
+                            <li>Selecciona <strong>"Instalar aplicación"</strong></li>
+                            <li>Toca <strong>"Instalar"</strong></li>
+                        </ol>
+                        <button onclick="this.parentElement.remove()" class="btn btn-primary mt-2">Entendido</button>
+                    </div>
+                `;
+            } else if (isMobile) {
+                instructions = `
+                    <div class="alert alert-info" role="alert" style="margin: 20px;">
+                        <h5>📱 Instalar en móvil:</h5>
+                        <ol>
+                            <li>Busca el icono de instalación (📥) en la barra de direcciones</li>
+                            <li>O toca el menú del navegador y busca "Instalar app"</li>
+                        </ol>
+                        <button onclick="this.parentElement.remove()" class="btn btn-primary mt-2">Entendido</button>
+                    </div>
+                `;
+            } else {
+                instructions = `
+                    <div class="alert alert-info" role="alert" style="margin: 20px;">
+                        <h5>💻 Instalar en PC:</h5>
+                        <ol>
+                            <li>Busca el icono de instalación (📥) en la barra de direcciones</li>
+                            <li>O usa <strong>Ctrl+Shift+I</strong> y busca "Install"</li>
+                        </ol>
+                        <button onclick="this.parentElement.remove()" class="btn btn-primary mt-2">Entendido</button>
+                    </div>
+                `;
+            }
+            
+            // 🚀 REEMPLAZAR EL BOTÓN CON LAS INSTRUCCIONES
+            const installSection = document.getElementById('pwa-install-section');
+            if (installSection) {
+                installSection.innerHTML = instructions;
+            }
+        }
+        
+        // 🚀 CARGAR ESTADÍSTICAS POR DEFECTO (CUANDO PWA NO ESTÁ DISPONIBLE)
+        function cargarEstadisticasPorDefecto() {
+            console.log('🚀 Cargando estadísticas por defecto...');
+            estadisticas = { totalJugadores: 0, totalArqueros: 0, totalPartidos: 0 };
+            actualizarUI();
+        }
         
         // 🚀 CARGAR ESTADÍSTICAS DESDE INDEXEDDB (100% OFFLINE)
         async function cargarEstadisticasOffline() {
             try {
-                // 🚀 ESPERAR A QUE OFFLINE MANAGER ESTÉ LISTO
-                while (!window.offlineManager) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                // 🚀 VERIFICAR QUE OFFLINE MANAGER ESTÉ DISPONIBLE
+                if (!window.offlineManager) {
+                    console.warn('⚠️ Offline Manager no disponible, usando datos por defecto');
+                    return;
                 }
                 
                 estadisticas = await window.offlineManager.getEstadisticas();
@@ -339,14 +664,19 @@
         
         // 🚀 ACTUALIZAR UI CON ESTADÍSTICAS
         function actualizarUI() {
-            document.getElementById('totalJugadores').textContent = estadisticas.totalJugadores;
-            document.getElementById('totalArqueros').textContent = estadisticas.totalArqueros;
-            document.getElementById('totalPartidos').textContent = estadisticas.totalPartidos;
+            const totalJugadoresElement = document.getElementById('totalJugadores');
+            const totalArquerosElement = document.getElementById('totalArqueros');
+            const totalPartidosElement = document.getElementById('totalPartidos');
+            
+            if (totalJugadoresElement) totalJugadoresElement.textContent = estadisticas.totalJugadores;
+            if (totalArquerosElement) totalArquerosElement.textContent = estadisticas.totalArqueros;
+            if (totalPartidosElement) totalPartidosElement.textContent = estadisticas.totalPartidos;
         }
         
         // 🚀 EXPORTAR FUNCIONES PARA USO GLOBAL
         window.cargarEstadisticasOffline = cargarEstadisticasOffline;
         window.actualizarUI = actualizarUI;
+        window.waitForPWAComponents = waitForPWAComponents;
     </script>
 </body>
 </html>

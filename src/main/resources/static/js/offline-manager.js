@@ -669,10 +669,15 @@ class OfflineManager {
 
 // 🚀 INICIALIZACIÓN
 let offlineManager;
-document.addEventListener('DOMContentLoaded', () => {
-    offlineManager = new OfflineManager();
-});
 
-// 🚀 EXPORTAR PARA USO GLOBAL
+// 🚀 CREAR INSTANCIA INMEDIATAMENTE
+offlineManager = new OfflineManager();
+
+// 🚀 EXPORTAR PARA USO GLOBAL INMEDIATAMENTE
 window.OfflineManager = OfflineManager;
 window.offlineManager = offlineManager;
+
+// 🚀 REGISTRAR EVENTO ADICIONAL PARA DOM
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 DOM cargado - OfflineManager ya está disponible');
+});

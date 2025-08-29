@@ -1,12 +1,13 @@
 com\Fulbito\model\Partido.class
 com\Fulbito\config\ValidationConfig.class
+com\Fulbito\config\ServiceWorkerConfig.class
 com\Fulbito\FulbitoApplication.class
 com\Fulbito\repository\JugadorRepository.class
-com\Fulbito\service\FormacionEquiposService.class
 com\Fulbito\repository\PartidoRepository.class
 com\Fulbito\model\NivelEdad.class
-com\Fulbito\model\Jugador.class
 com\Fulbito\controller\FulbitoController.class
 com\Fulbito\config\DatabaseConfig.class
 com\Fulbito\model\EquipoTemporal.class
 com\Fulbito\repository\EquipoTemporalRepository.class
+com\Fulbito\service\FormacionEquiposService.class
+com\Fulbito\model\Jugador.class

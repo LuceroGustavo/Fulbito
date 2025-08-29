@@ -698,14 +698,15 @@ class MobileFeatures {
 // 🚀 INSTANCIAR MOBILE FEATURES
 let mobileFeatures;
 
-// 🎯 Esperar a que el DOM esté listo
+// 🚀 CREAR INSTANCIA INMEDIATAMENTE
+mobileFeatures = new MobileFeatures();
+
+// 🎯 Exponer globalmente INMEDIATAMENTE
+window.mobileFeatures = mobileFeatures;
+
+// 🎯 REGISTRAR EVENTO ADICIONAL PARA DOM
 document.addEventListener('DOMContentLoaded', () => {
-  mobileFeatures = new MobileFeatures();
-  
-  // 🎯 Exponer globalmente para debugging
-  window.mobileFeatures = mobileFeatures;
-  
-  console.log('🚀 Mobile Features cargado en DOM');
+  console.log('🚀 DOM cargado - Mobile Features ya está disponible');
 });
 
 // 🌐 Exportar para uso en otros módulos

@@ -2,21 +2,17 @@
 // Versión: 1.0.0
 // Funcionalidad: Cache offline, sincronización y funcionalidad sin internet
 
-const CACHE_NAME = 'fulbito-v1.0.0';
-const STATIC_CACHE = 'fulbito-static-v1.0.0';
-const DYNAMIC_CACHE = 'fulbito-dynamic-v1.0.0';
+const CACHE_NAME = 'fulbito-v1.1.0';
+const STATIC_CACHE = 'fulbito-static-v1.1.0';
+const DYNAMIC_CACHE = 'fulbito-dynamic-v1.1.0';
 
 // 📁 Recursos estáticos para cache inmediato
 const STATIC_RESOURCES = [
   '/',
-  '/css/style.css',
-  '/js/main.js',
-  '/js/offline-manager.js',
-  '/js/mobile-features.js',
-  '/js/pwa-installer.js',
   '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/img/icons/icon-192x192.png',
+  '/img/icons/icon-512x512.png',
+  '/img/logo.png'
 ];
 
 // 🎯 Recursos dinámicos para cache bajo demanda
@@ -34,14 +30,26 @@ self.addEventListener('install', (event) => {
     caches.open(STATIC_CACHE)
       .then((cache) => {
         console.log('📦 Cacheando recursos estáticos...');
-        return cache.addAll(STATIC_RESOURCES);
+        
+        // 🎯 CACHEAR RECURSOS UNO POR UNO PARA EVITAR FALLOS
+        const cachePromises = STATIC_RESOURCES.map(resource => {
+          return cache.add(resource).catch(error => {
+            console.warn(`⚠️ No se pudo cachear: ${resource}`, error);
+            return null; // Continuar con otros recursos
+          });
+        });
+        
+        return Promise.all(cachePromises);
       })
-      .then(() => {
-        console.log('✅ Recursos estáticos cacheados exitosamente');
+      .then((results) => {
+        const successful = results.filter(r => r !== null).length;
+        console.log(`✅ ${successful}/${STATIC_RESOURCES.length} recursos cacheados exitosamente`);
         return self.skipWaiting();
       })
       .catch((error) => {
-        console.error('❌ Error cacheando recursos estáticos:', error);
+        console.error('❌ Error crítico en Service Worker:', error);
+        // 🎯 CONTINUAR AUNQUE FALLE EL CACHE
+        return self.skipWaiting();
       })
   );
 });
@@ -299,10 +307,60 @@ self.addEventListener('notificationclick', (event) => {
 
 // 🎯 MANEJO DE INSTALACIÓN PWA
 self.addEventListener('beforeinstallprompt', (event) => {
-  console.log('📱 Prompt de instalación PWA disponible');
+  console.log('📱 PROMPT DE INSTALACIÓN PWA DETECTADO EN SERVICE WORKER!');
+  
+  // 🎯 Prevenir que se muestre automáticamente
+  event.preventDefault();
   
   // 🎯 Guardar el evento para usarlo después
   self.deferredPrompt = event;
+  
+  // 🎯 NOTIFICAR A TODOS LOS CLIENTES
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'PWA_INSTALL_PROMPT_AVAILABLE',
+        event: event
+      });
+    });
+  });
+  
+  console.log('✅ Prompt de instalación PWA configurado en Service Worker');
+});
+
+// 🎯 MANEJO DE INSTALACIÓN PWA - ALTERNATIVO
+self.addEventListener('install', (event) => {
+  console.log('🚀 Service Worker instalando...');
+  
+  // 🎯 FORZAR ACTIVACIÓN INMEDIATA
+  event.waitUntil(
+    caches.open(STATIC_CACHE)
+      .then((cache) => {
+        console.log('📦 Cacheando recursos estáticos...');
+        
+        // 🎯 CACHEAR RECURSOS UNO POR UNO PARA EVITAR FALLOS
+        const cachePromises = STATIC_RESOURCES.map(resource => {
+          return cache.add(resource).catch(error => {
+            console.warn(`⚠️ No se pudo cachear: ${resource}`, error);
+            return null; // Continuar con otros recursos
+          });
+        });
+        
+        return Promise.all(cachePromises);
+      })
+      .then((results) => {
+        const successful = results.filter(r => r !== null).length;
+        console.log(`✅ ${successful}/${STATIC_RESOURCES.length} recursos cacheados exitosamente`);
+        
+        // 🎯 FORZAR ACTIVACIÓN INMEDIATA
+        return self.skipWaiting();
+      })
+      .catch((error) => {
+        console.error('❌ Error crítico en Service Worker:', error);
+        // 🎯 CONTINUAR AUNQUE FALLE EL CACHE
+        return self.skipWaiting();
+      })
+  );
 });
 
 // 🚀 MANEJO DE APLICACIÓN INSTALADA
@@ -317,3 +375,7 @@ self.addEventListener('appinstalled', (event) => {
 });
 
 console.log('🚀 Service Worker de Fulbito cargado exitosamente');
+console.log('📱 Service Worker scope:', self.registration?.scope);
+console.log('📱 Service Worker state:', self.registration?.active ? 'ACTIVE' : 'INACTIVE');
+console.log('📱 Service Worker installing:', self.registration?.installing ? 'YES' : 'NO');
+console.log('📱 Service Worker waiting:', self.registration?.waiting ? 'YES' : 'NO');

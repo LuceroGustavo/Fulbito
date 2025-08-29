@@ -4,6 +4,7 @@
   "description": "Aplicación para gestionar equipos de fútbol balanceados",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#2E7D32",
   "theme_color": "#4CAF50",
   "orientation": "portrait-primary",
@@ -11,51 +12,56 @@
   "lang": "es",
   "dir": "ltr",
   "categories": ["sports", "utilities", "productivity"],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
+      "src": "/img/icons/icon-72x72.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-96x96.png",
+      "src": "/img/icons/icon-96x96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-128x128.png",
+      "src": "/img/icons/icon-128x128.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-144x144.png",
+      "src": "/img/icons/icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-152x152.png",
+      "src": "/img/icons/icon-152x152.png",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/img/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-384x384.png",
+      "src": "/img/icons/icon-384x384.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/img/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable any"
@@ -85,7 +91,7 @@
       "url": "/equipos/formar",
       "icons": [
         {
-          "src": "/icons/icon-96x96.png",
+          "src": "/img/icons/icon-96x96.png",
           "sizes": "96x96"
         }
       ]
@@ -97,7 +103,7 @@
       "url": "/jugador/nuevo",
       "icons": [
         {
-          "src": "/icons/icon-96x96.png",
+          "src": "/img/icons/icon-96x96.png",
           "sizes": "96x96"
         }
       ]
@@ -109,17 +115,12 @@
       "url": "/partidos/historial",
       "icons": [
         {
-          "src": "/icons/icon-96x96.png",
+          "src": "/img/icons/icon-96x96.png",
           "sizes": "96x96"
         }
       ]
     }
   ],
-  "related_applications": [],
-  "prefer_related_applications": false,
-  "edge_side_panel": {
-    "preferred_width": 400
-  },
   "launch_handler": {
     "client_mode": "focus-existing"
   },

@@ -26,6 +26,9 @@ class PWAInstaller {
     // 🎯 Solicitar permisos de notificación
     this.requestNotificationPermission();
     
+    // 🎯 MOSTRAR BOTÓN MANUAL SI ES NECESARIO
+    this.showManualInstallButton();
+    
     console.log('✅ PWA Installer inicializado');
   }
 
@@ -621,9 +624,13 @@ class PWAInstaller {
     
     // 🎯 Auto-remover después de 8 segundos
     setTimeout(() => {
-      const successElement = document.querySelector('div:has(> div:contains("🎉"))');
-      if (successElement) {
-        successElement.remove();
+      // 🎯 Buscar por contenido de texto en lugar de selector CSS inválido
+      const successElements = document.querySelectorAll('div');
+      for (const element of successElements) {
+        if (element.textContent && element.textContent.includes('🎉')) {
+          element.remove();
+          break;
+        }
       }
     }, 8000);
   }
@@ -697,9 +704,13 @@ class PWAInstaller {
     
     // 🎯 Auto-remover después de 5 segundos
     setTimeout(() => {
-      const notificationElement = document.querySelector('div:has(> div:contains("🔔"))');
-      if (notificationElement) {
-        notificationElement.remove();
+      // 🎯 Buscar por contenido de texto en lugar de selector CSS inválido
+      const notificationElements = document.querySelectorAll('div');
+      for (const element of notificationElements) {
+        if (element.textContent && element.textContent.includes('🔔')) {
+          element.remove();
+          break;
+        }
       }
     }, 5000);
   }
@@ -761,19 +772,146 @@ class PWAInstaller {
       console.error('❌ Error limpiando datos PWA:', error);
     }
   }
+
+  // 🎯 MOSTRAR BOTÓN MANUAL DE INSTALACIÓN
+  showManualInstallButton() {
+    try {
+      console.log('🔍 Verificando si mostrar botón manual de instalación...');
+      
+      // 🎯 VERIFICAR DISPOSITIVO
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isChrome = /Chrome/.test(navigator.userAgent);
+      const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+      
+      console.log('📱 Dispositivo detectado:', { isMobile, isChrome, isSafari });
+      
+      // 🎯 MOSTRAR BOTÓN MANUAL EN MÓVIL O SI NO HAY PROMPT AUTOMÁTICO
+      if (isMobile || !this.deferredPrompt) {
+        console.log('✅ Mostrando botón manual de instalación');
+        this.showManualInstallSection();
+      } else {
+        console.log('✅ Prompt automático disponible, ocultando botón manual');
+        this.hideManualInstallSection();
+      }
+      
+    } catch (error) {
+      console.error('❌ Error mostrando botón manual:', error);
+      // 🎯 EN CASO DE ERROR, SIEMPRE MOSTRAR EL BOTÓN
+      this.showManualInstallSection();
+    }
+  }
+
+  // 🎯 MOSTRAR SECCIÓN DE INSTALACIÓN MANUAL
+  showManualInstallSection() {
+    const installSection = document.getElementById('pwa-install-section');
+    if (installSection) {
+      installSection.style.display = 'block';
+      console.log('✅ Botón manual de instalación visible');
+    } else {
+      console.warn('⚠️ No se encontró la sección de instalación manual');
+    }
+  }
+
+  // 🎯 OCULTAR SECCIÓN DE INSTALACIÓN MANUAL
+  hideManualInstallSection() {
+    const installSection = document.getElementById('pwa-install-section');
+    if (installSection) {
+      installSection.style.display = 'none';
+      console.log('✅ Botón manual de instalación oculto');
+    }
+  }
+
+  // 🎯 MANEJAR INSTALACIÓN MANUAL
+  handleManualInstall() {
+    console.log('🚀 Iniciando instalación manual...');
+    
+    try {
+      // 🎯 INTENTAR INSTALACIÓN AUTOMÁTICA PRIMERO
+      if (this.deferredPrompt) {
+        console.log('✅ Usando prompt automático disponible');
+        this.deferredPrompt.prompt();
+        this.deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('✅ Usuario aceptó la instalación automática');
+            this.hideManualInstallSection();
+          } else {
+            console.log('❌ Usuario rechazó la instalación automática');
+            this.showManualInstallSection();
+          }
+          this.deferredPrompt = null;
+        });
+      } else {
+        // 🎯 SI NO HAY PROMPT AUTOMÁTICO, MOSTRAR INSTRUCCIONES
+        console.log('⚠️ No hay prompt automático, mostrando instrucciones manuales');
+        this.showManualInstallInstructions();
+      }
+    } catch (error) {
+      console.error('❌ Error en instalación manual:', error);
+      this.showManualInstallInstructions();
+    }
+  }
+
+  // 🎯 MOSTRAR INSTRUCCIONES DE INSTALACIÓN MANUAL
+  showManualInstallInstructions() {
+    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    
+    let instructions = '';
+    
+    if (isIOS) {
+      instructions = `
+        <div class="alert alert-info" role="alert">
+          <h5>📱 Instalar en iPhone/iPad:</h5>
+          <ol>
+            <li>Toca el botón <strong>Compartir</strong> (□↑) en Safari</li>
+            <li>Selecciona <strong>"Añadir a pantalla de inicio"</strong></li>
+            <li>Toca <strong>"Añadir"</strong></li>
+          </ol>
+        </div>
+      `;
+    } else if (isAndroid) {
+      instructions = `
+        <div class="alert alert-info" role="alert">
+          <h5>📱 Instalar en Android:</h5>
+          <ol>
+            <li>Toca el menú (⋮) en Chrome</li>
+            <li>Selecciona <strong>"Instalar aplicación"</strong></li>
+            <li>Toca <strong>"Instalar"</strong></li>
+          </ol>
+        </div>
+      `;
+    } else {
+      instructions = `
+        <div class="alert alert-info" role="alert">
+          <h5>💻 Instalar en PC:</h5>
+          <ol>
+            <li>Busca el icono de instalación (📥) en la barra de direcciones</li>
+            <li>O usa <strong>Ctrl+Shift+I</strong> y busca "Install"</li>
+          </ol>
+        </div>
+      `;
+    }
+    
+    // 🎯 REEMPLAZAR EL BOTÓN CON LAS INSTRUCCIONES
+    const installSection = document.getElementById('pwa-install-section');
+    if (installSection) {
+      installSection.innerHTML = instructions;
+    }
+  }
 }
 
 // 🚀 INSTANCIAR PWA INSTALLER
 let pwaInstaller;
 
-// 🎯 Esperar a que el DOM esté listo
+// 🚀 CREAR INSTANCIA INMEDIATAMENTE
+pwaInstaller = new PWAInstaller();
+
+// 🎯 Exponer globalmente INMEDIATAMENTE
+window.pwaInstaller = pwaInstaller;
+
+// 🎯 REGISTRAR EVENTO ADICIONAL PARA DOM
 document.addEventListener('DOMContentLoaded', () => {
-  pwaInstaller = new PWAInstaller();
-  
-  // 🎯 Exponer globalmente para debugging
-  window.pwaInstaller = pwaInstaller;
-  
-  console.log('🚀 PWA Installer cargado en DOM');
+  console.log('🚀 DOM cargado - PWA Installer ya está disponible');
 });
 
 // 🌐 Exportar para uso en otros módulos
